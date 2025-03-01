@@ -1,0 +1,3092 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cluster - The Traveler Connection Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0078ff;
+            --primary-glow: rgba(0, 120, 255, 0.2);
+            --secondary: #ff4e50;
+            --accent: #7b61ff;
+            --dark-bg: #080808;
+            --dark-surface: #111111;
+            --dark-surface-2: #1a1a1a;
+            --text: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-tertiary: rgba(255, 255, 255, 0.5);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        
+        #app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Header Styles */
+        header {
+            backdrop-filter: blur(10px);
+            background: rgba(8, 8, 8, 0.8);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            left: -18px;
+            box-shadow: 0 0 15px var(--primary-glow);
+            animation: pulse 3s infinite;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Main Content Styles */
+        main {
+            padding-top: 5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Tab Navigation */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            background: var(--dark-surface);
+            padding: 0.5rem;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .tab {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .tab.active {
+            color: var(--text);
+        }
+        
+        .tab-highlight {
+            position: absolute;
+            background: var(--dark-surface-2);
+            height: calc(100% - 10px);
+            border-radius: 8px;
+            top: 5px;
+            left: 5px;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            padding: 0 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: -0.3px;
+            color: var(--text-secondary);
+        }
+        
+        /* Discover Tab */
+        .search-bar {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .search-input {
+            background: var(--dark-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            width: 100%;
+            color: var(--text);
+            font-size: 1rem;
+            padding-left: 3rem;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+        }
+        
+        .discover-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .map-container {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            position: relative;
+        }
+        
+        #map {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('/api/placeholder/1000/563') center/cover;
+            filter: grayscale(30%) contrast(120%) brightness(70%);
+            opacity: 0.9;
+        }
+        
+        .map-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent, var(--dark-surface));
+            pointer-events: none;
+        }
+        
+        .map-hotspots {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+        }
+        
+        .hotspot {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: 0.2;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+        
+        .hotspot::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .trending-list {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: 100%;
+            overflow: auto;
+        }
+        
+        .trending-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .trending-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .trending-item:last-child {
+            border-bottom: none;
+        }
+        
+        .trending-icon {
+            font-size: 1.5rem;
+            background: var(--dark-surface-2);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 1rem;
+            color: var(--primary);
+        }
+        
+        .trending-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        
+        .trending-info p {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+        
+        .stat-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-badge {
+            background: var(--dark-surface-2);
+            border-radius: 100px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        /* Connect Tab */
+        /* Connect Tab Styles */
+        .connect-tabs-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .connect-tabs {
+            display: flex;
+            gap: 1rem;
+            background: var(--dark-surface);
+            padding: 0.5rem;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .connect-tab {
+            padding: 0.7rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .connect-tab.active {
+            color: var(--text);
+        }
+        
+        .connect-tab-highlight {
+            position: absolute;
+            background: var(--dark-surface-2);
+            height: calc(100% - 10px);
+            border-radius: 8px;
+            top: 5px;
+            left: 5px;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1;
+        }
+        
+        .connect-content-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        
+        .connect-content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Location List */
+        .location-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .location-card {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            height: 110px;
+        }
+        
+        .location-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .location-image {
+            width: 200px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .location-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .location-card:hover .location-image img {
+            transform: scale(1.05);
+        }
+        
+        .location-info {
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .location-info h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .traveler-count, .travel-dates {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .traveler-count i, .travel-dates i {
+            color: var(--primary);
+        }
+        
+        /* Location Detail Page */
+        .location-detail-page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            z-index: 100;
+            padding: 2rem;
+        }
+        
+        .location-detail-page.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        .location-detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .back-button {
+            background: var(--dark-surface);
+            border: none;
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1.5rem;
+            transition: background 0.2s ease;
+        }
+        
+        .back-button:hover {
+            background: var(--dark-surface-2);
+        }
+        
+        .detail-location-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .travelers-graph {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        
+        .travelers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .travelers-header h3 {
+            margin: 0;
+        }
+        
+        .travelers-filter {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-item {
+            padding: 0.4rem 0.8rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        
+        .filter-item:hover {
+            background: var(--dark-surface-2);
+        }
+        
+        .filter-item.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .travelers-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        /* Individual traveler card - will be used in location details */
+        .traveler-card {
+            background: var(--dark-surface-2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .traveler-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .traveler-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .traveler-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+        
+        .traveler-name {
+            font-weight: 600;
+        }
+        
+        .traveler-status {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+        
+        .traveler-dates {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .traveler-interests {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .traveler-interest {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.7rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+        }
+        
+        .connect-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .connect-btn:hover {
+            background: #0066e0;
+        }
+        
+        /* Community Tab */
+        .community-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+        }
+        
+        .channels-list {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: calc(80vh - 8rem);
+            overflow: auto;
+        }
+        
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .channel-item.active {
+            background: var(--dark-surface-2);
+        }
+        
+        .channel-item:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .channel-icon {
+            color: var(--text-secondary);
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .channel-name {
+            font-weight: 500;
+        }
+        
+        .channel-count {
+            margin-left: auto;
+            background: var(--primary-glow);
+            color: var(--primary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .chat-container {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            height: calc(80vh - 8rem);
+        }
+        
+        .chat-header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .chat-title {
+            margin-bottom: 0;
+        }
+        
+        .online-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            gap: 0.3rem;
+        }
+        
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .message {
+            max-width: 80%;
+        }
+        
+        .message.received {
+            align-self: flex-start;
+        }
+        
+        .message.sent {
+            align-self: flex-end;
+        }
+        
+        .message-content {
+            background: var(--dark-surface-2);
+            padding: 1rem;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+            position: relative;
+        }
+        
+        .message.sent .message-content {
+            background: var(--primary);
+            border-radius: 16px;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+        
+        .message.sent .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .chat-input-container {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .chat-input {
+            flex: 1;
+            background: var(--dark-surface-2);
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 100px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+        }
+        
+        .chat-send {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .chat-send:hover {
+            background: #0066e0;
+        }
+        
+        .camera-tool {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 120, 255, 0.4);
+            transition: transform 0.3s ease;
+            font-size: 1.3rem;
+            z-index: 100;
+        }
+        
+        .camera-tool:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 120, 255, 0.4);
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(0, 120, 255, 0);
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 120, 255, 0);
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        /* Profile Overlay */
+        .profile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .profile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .profile-container {
+            background: var(--dark-surface);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 900px;
+            height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .profile-overlay.active .profile-container {
+            transform: translateY(0);
+        }
+        
+        .profile-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .profile-header h2 {
+            margin: 0;
+        }
+        
+        .close-profile {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        
+        .close-profile:hover {
+            background: var(--dark-surface-2);
+            color: var(--text);
+        }
+        
+        .profile-tabs-container {
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .profile-tabs {
+            display: flex;
+            gap: 0.5rem;
+            position: relative;
+            overflow-x: auto;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            padding-bottom: 1rem;
+        }
+        
+        .profile-tabs::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        .profile-tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .profile-tab.active {
+            color: var(--text);
+        }
+        
+        .profile-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .profile-content-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        
+        .profile-content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Profile Form Styles */
+        .profile-form {
+            max-width: 800px;
+        }
+        
+        .profile-avatar-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1.5rem;
+        }
+        
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .change-avatar-btn {
+            background: var(--dark-surface-2);
+            border: none;
+            color: var(--text);
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .change-avatar-btn:hover {
+            background: var(--primary);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            background: var(--dark-surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 120, 255, 0.2);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .verification-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1rem;
+            background: var(--dark-surface-2);
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .verification-status.verified {
+            color: #4ade80;
+        }
+        
+        .form-actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .save-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .save-btn:hover {
+            background: #0066e0;
+        }
+        
+        /* Checkbox and Toggle Styles */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .checkbox-text {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .checkbox-text:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--dark-surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-label input[type="checkbox"]:checked ~ .checkbox-text:before {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .checkbox-label input[type="checkbox"]:checked ~ .checkbox-text:after {
+            content: '✓';
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 12px;
+        }
+        
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--dark-surface-2);
+            border-radius: 24px;
+            transition: .4s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        /* Interest Tags Editor */
+        .interest-tags-editor {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            background: var(--dark-surface-2);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .interest-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .remove-tag {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+        
+        .remove-tag:hover {
+            opacity: 1;
+        }
+        
+        .add-interest-input {
+            flex: 1;
+            min-width: 150px;
+            border: none;
+            background: none;
+            color: var(--text);
+            padding: 0.4rem;
+            font-size: 0.85rem;
+        }
+        
+        .add-interest-input:focus {
+            outline: none;
+        }
+        
+        /* Range Slider */
+        .range-slider-container {
+            margin-top: 0.5rem;
+        }
+        
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--dark-surface-2);
+            border-radius: 5px;
+            outline: none;
+            margin-bottom: 1rem;
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 120, 255, 0.5);
+        }
+        
+        .range-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 120, 255, 0.5);
+        }
+        
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+        }
+        
+        /* Connections Styles */
+        .connections-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--dark-surface-2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .connections-search {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .connections-search input {
+            width: 100%;
+            background: var(--dark-surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            padding-left: 2.5rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        
+        .connections-search i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+        }
+        
+        .connections-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .connection-item {
+            background: var(--dark-surface-2);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .connection-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .connection-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .connection-info {
+            flex: 1;
+        }
+        
+        .connection-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        
+        .connection-info p {
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .connection-location {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .connection-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .message-btn, .more-options-btn {
+            background: var(--dark-surface);
+            border: none;
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        
+        .message-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .more-options-btn:hover {
+            background: var(--dark-surface-2);
+            color: var(--text);
+        }
+        
+        /* Invites Styles */
+        .invites-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .invites-section h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .invites-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .invite-item {
+            background: var(--dark-surface-2);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+        
+        .invite-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .invite-info {
+            flex: 1;
+        }
+        
+        .invite-info h4 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .invite-details {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .invite-message {
+            background: var(--dark-surface);
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        
+        .invite-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            padding-top: 0.5rem;
+        }
+        
+        .invite-status.pending {
+            color: #f59e0b;
+        }
+        
+        .invite-status.accepted {
+            color: #4ade80;
+        }
+        
+        .invite-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .accept-btn, .decline-btn, .cancel-btn {
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .accept-btn {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .accept-btn:hover {
+            background: #0066e0;
+        }
+        
+        .decline-btn, .cancel-btn {
+            background: var(--dark-surface);
+            color: var(--text-secondary);
+        }
+        
+        .decline-btn:hover, .cancel-btn:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .discover-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .community-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .channels-list {
+                height: auto;
+                max-height: 300px;
+            }
+            
+            .chat-container {
+                height: 60vh;
+            }
+            
+            .profile-container {
+                width: 95%;
+                height: 90vh;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .connections-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .invite-item {
+                flex-direction: column;
+            }
+            
+            .invite-actions {
+                flex-direction: row;
+                margin-top: 1rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .connection-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs, .connect-tabs, .profile-tabs {
+                width: 90%;
+            }
+            
+            .tab, .connect-tab, .profile-tab {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .profile-avatar-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .connection-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .connection-actions {
+                align-self: flex-end;
+                margin-top: -40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <a href="#" class="logo">Cluster</a>
+            <div class="user-profile" id="profile-trigger">
+                <div class="user-avatar">E</div>
+            </div>
+        </header>
+        
+        <!-- Profile Page Overlay -->
+        <div id="profile-overlay" class="profile-overlay">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <h2>Your Profile</h2>
+                    <button class="close-profile">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="profile-tabs-container">
+                    <div class="profile-tabs">
+                        <div class="profile-tab active" data-profile-tab="personal">Personal Info</div>
+                        <div class="profile-tab" data-profile-tab="preferences">Travel Preferences</div>
+                        <div class="profile-tab" data-profile-tab="connections">Connections</div>
+                        <div class="profile-tab" data-profile-tab="invites">Invites</div>
+                        <div class="profile-tab-highlight"></div>
+                    </div>
+                </div>
+                
+                <!-- Personal Info Tab -->
+                <div id="personal-tab" class="profile-content-section active">
+                    <form id="profile-form" class="profile-form">
+                        <div class="profile-avatar-section">
+                            <div class="profile-avatar-large">E</div>
+                            <button type="button" class="change-avatar-btn">Change Photo</button>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" value="Emma" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" value="Chen" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="emma@example.com" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" value="+1 (555) 123-4567" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bio">Bio</label>
+                            <textarea id="bio" name="bio" class="form-textarea" rows="4">Passionate traveler with a love for photography and authentic cultural experiences. Always looking to connect with like-minded explorers!</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location">Home Location</label>
+                            <input type="text" id="location" name="location" value="San Francisco, CA" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Verification</label>
+                            <div class="verification-status verified">
+                                <i class="fas fa-check-circle"></i> Your profile is verified
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Travel Preferences Tab -->
+                <div id="preferences-tab" class="profile-content-section">
+                    <form id="preferences-form" class="profile-form">
+                        <div class="form-group">
+                            <label>Travel Style</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="solo" checked>
+                                    <span class="checkbox-text">Solo travel</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="group" checked>
+                                    <span class="checkbox-text">Group travel</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="backpacking">
+                                    <span class="checkbox-text">Backpacking</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="luxury">
+                                    <span class="checkbox-text">Luxury</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Travel Interests</label>
+                            <div class="interest-tags-editor">
+                                <div class="interest-tag">
+                                    Photography <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Food <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Hiking <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Culture <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Museums <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <input type="text" class="add-interest-input" placeholder="Add interest...">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="budget">Budget Range</label>
+                            <div class="range-slider-container">
+                                <input type="range" id="budget" name="budget" min="1" max="5" value="3" class="range-slider">
+                                <div class="range-labels">
+                                    <span>Budget</span>
+                                    <span>Mid-range</span>
+                                    <span>Luxury</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pace">Travel Pace</label>
+                            <div class="range-slider-container">
+                                <input type="range" id="pace" name="pace" min="1" max="5" value="4" class="range-slider">
+                                <div class="range-labels">
+                                    <span>Relaxed</span>
+                                    <span>Balanced</span>
+                                    <span>Fast-paced</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="planning">Planning Style</label>
+                            <div class="range-slider-container">
+                                <input type="range" id="planning" name="planning" min="1" max="5" value="2" class="range-slider">
+                                <div class="range-labels">
+                                    <span>Spontaneous</span>
+                                    <span>Flexible</span>
+                                    <span>Structured</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Accommodation Preferences</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="hostel" checked>
+                                    <span class="checkbox-text">Hostels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="budget" checked>
+                                    <span class="checkbox-text">Budget hotels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="midrange" checked>
+                                    <span class="checkbox-text">Mid-range hotels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="luxury">
+                                    <span class="checkbox-text">Luxury hotels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="airbnb" checked>
+                                    <span class="checkbox-text">Airbnb/Rentals</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Privacy Settings</label>
+                            <div class="toggle-group">
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Share my travel dates publicly</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Allow connection requests</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Show me in search results</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Connections Tab -->
+                <div id="connections-tab" class="profile-content-section">
+                    <div class="connections-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Active Connections</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">4</div>
+                            <div class="stat-label">Upcoming Trips</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">27</div>
+                            <div class="stat-label">Countries Visited</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connections-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search connections...">
+                    </div>
+                    
+                    <div class="connections-list">
+                        <div class="connection-item">
+                            <div class="connection-avatar">M</div>
+                            <div class="connection-info">
+                                <h4>Mark Johnson</h4>
+                                <p>Connected since Feb 2025</p>
+                                <div class="connection-location">
+                                    <i class="fas fa-map-marker-alt"></i> Tokyo, Japan (Apr 15 - 25)
+                                </div>
+                            </div>
+                            <div class="connection-actions">
+                                <button class="message-btn">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="more-options-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="connection-item">
+                            <div class="connection-avatar">S</div>
+                            <div class="connection-info">
+                                <h4>Sarah Winters</h4>
+                                <p>Connected since Jan 2025</p>
+                                <div class="connection-location">
+                                    <i class="fas fa-map-marker-alt"></i> Barcelona, Spain (Jul 10 - 20)
+                                </div>
+                            </div>
+                            <div class="connection-actions">
+                                <button class="message-btn">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="more-options-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="connection-item">
+                            <div class="connection-avatar">A</div>
+                            <div class="connection-info">
+                                <h4>Alex Turner</h4>
+                                <p>Connected since Mar 2025</p>
+                                <div class="connection-location">
+                                    <i class="fas fa-map-marker-alt"></i> Bali, Indonesia (May 5 - 15)
+                                </div>
+                            </div>
+                            <div class="connection-actions">
+                                <button class="message-btn">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="more-options-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Invites Tab -->
+                <div id="invites-tab" class="profile-content-section">
+                    <div class="invites-container">
+                        <div class="invites-section">
+                            <h3>Received Invites</h3>
+                            <div class="invites-list">
+                                <div class="invite-item">
+                                    <div class="invite-avatar">J</div>
+                                    <div class="invite-info">
+                                        <h4>Jamie Lee invited you to join their trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Costa Rica</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Jan 10 - 20, 2026</span>
+                                        </div>
+                                        <p class="invite-message">"Looking for a hiking buddy for an adventure in Costa Rica. We'll explore volcanoes and rainforests!"</p>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="accept-btn">Accept</button>
+                                        <button class="decline-btn">Decline</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="invite-item">
+                                    <div class="invite-avatar">R</div>
+                                    <div class="invite-info">
+                                        <h4>Ryan Park invited you to join their trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Tokyo, Japan</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Apr 15 - 25, 2025</span>
+                                        </div>
+                                        <p class="invite-message">"I noticed we'll be in Tokyo at the same time. Would you like to explore some photography spots together?"</p>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="accept-btn">Accept</button>
+                                        <button class="decline-btn">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="invites-section">
+                            <h3>Sent Invites</h3>
+                            <div class="invites-list">
+                                <div class="invite-item">
+                                    <div class="invite-avatar">L</div>
+                                    <div class="invite-info">
+                                        <h4>You invited Liam Chen to join your trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Lisbon, Portugal</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Jun 5 - 15, 2025</span>
+                                        </div>
+                                        <p class="invite-message">"Hey! I saw we both love photography and will be in Lisbon around the same time. Want to explore the city together?"</p>
+                                        <div class="invite-status pending">
+                                            <i class="fas fa-clock"></i> Pending response
+                                        </div>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="cancel-btn">Cancel</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="invite-item">
+                                    <div class="invite-avatar">M</div>
+                                    <div class="invite-info">
+                                        <h4>You invited Maya Wong to join your trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Barcelona, Spain</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Jul 10 - 20, 2025</span>
+                                        </div>
+                                        <p class="invite-message">"Looking for someone to check out the architecture and food scene in Barcelona. Saw we have similar interests!"</p>
+                                        <div class="invite-status accepted">
+                                            <i class="fas fa-check-circle"></i> Accepted
+                                        </div>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="message-btn">
+                                            <i class="fas fa-comment"></i> Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <main>
+            <div class="tabs-container">
+                <div class="tabs">
+                    <div class="tab active" data-tab="discover">Discover</div>
+                    <div class="tab" data-tab="connect">Connect</div>
+                    <div class="tab" data-tab="community">Community</div>
+                    <div class="tab-highlight"></div>
+                </div>
+            </div>
+            
+            <!-- Discover Tab Content -->
+            <section id="discover" class="content-section active">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Search destinations, travel styles, or interests...">
+                </div>
+                
+                <div class="discover-grid">
+                    <div class="map-container">
+                        <div id="map"></div>
+                        <div class="map-overlay"></div>
+                        <div class="map-hotspots">
+                            <!-- Hotspots will be added dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="trending-list">
+                        <h3>Trending Destinations</h3>
+                        
+                        <div class="trending-item">
+                            <div class="trending-icon">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <div class="trending-info">
+                                <h4>Bali, Indonesia</h4>
+                                <p>Southeast Asia's tropical paradise</p>
+                                <div class="stat-badges">
+                                    <div class="stat-badge">
+                                        <i class="fas fa-user"></i> 248 travelers
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="fas fa-arrow-trend-up"></i> +15%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trending-item">
+                            <div class="trending-icon">
+                                <i class="fas fa-mountain"></i>
+                            </div>
+                            <div class="trending-info">
+                                <h4>Patagonia, Chile</h4>
+                                <p>Epic landscapes and outdoor adventures</p>
+                                <div class="stat-badges">
+                                    <div class="stat-badge">
+                                        <i class="fas fa-user"></i> 186 travelers
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="fas fa-arrow-trend-up"></i> +22%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trending-item">
+                            <div class="trending-icon">
+                                <i class="fas fa-city"></i>
+                            </div>
+                            <div class="trending-info">
+                                <h4>Lisbon, Portugal</h4>
+                                <p>Europe's sunniest capital city</p>
+                                <div class="stat-badges">
+                                    <div class="stat-badge">
+                                        <i class="fas fa-user"></i> 312 travelers
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="fas fa-arrow-trend-up"></i> +18%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trending-item">
+                            <div class="trending-icon">
+                                <i class="fas fa-landmark"></i>
+                            </div>
+                            <div class="trending-info">
+                                <h4>Kyoto, Japan</h4>
+                                <p>Ancient temples and cultural heritage</p>
+                                <div class="stat-badges">
+                                    <div class="stat-badge">
+                                        <i class="fas fa-user"></i> 205 travelers
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="fas fa-arrow-trend-up"></i> +12%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trending-item">
+                            <div class="trending-icon">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <div class="trending-info">
+                                <h4>Santorini, Greece</h4>
+                                <p>Iconic white and blue Aegean views</p>
+                                <div class="stat-badges">
+                                    <div class="stat-badge">
+                                        <i class="fas fa-user"></i> 274 travelers
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="fas fa-arrow-trend-up"></i> +20%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Connect Tab Content -->
+            <section id="connect" class="content-section">
+                <h2>Find Travel Companions</h2>
+                
+                <!-- Connect Sub-Tabs -->
+                <div class="connect-tabs-container">
+                    <div class="connect-tabs">
+                        <div class="connect-tab active" data-connect-tab="solo">Solo Travelers</div>
+                        <div class="connect-tab" data-connect-tab="group">Group Travelers</div>
+                        <div class="connect-tab-highlight"></div>
+                    </div>
+                </div>
+                
+                <!-- Solo Travelers Content -->
+                <div id="solo-travelers" class="connect-content-section active">
+                    <div class="location-list">
+                        <!-- Solo Location Cards -->
+                        <div class="location-card" data-location="bali">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80" alt="Bali">
+                            </div>
+                            <div class="location-info">
+                                <h3>Bali, Indonesia</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 42 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Apr - Jun 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="japan">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80" alt="Japan">
+                            </div>
+                            <div class="location-info">
+                                <h3>Tokyo, Japan</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 38 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Mar - May 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="lisbon">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=800&q=80" alt="Lisbon">
+                            </div>
+                            <div class="location-info">
+                                <h3>Lisbon, Portugal</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 31 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Jun - Aug 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="barcelona">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&w=800&q=80" alt="Barcelona">
+                            </div>
+                            <div class="location-info">
+                                <h3>Barcelona, Spain</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 27 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: May - Jul 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="nyc">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80" alt="New York">
+                            </div>
+                            <div class="location-info">
+                                <h3>New York City, USA</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 25 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Apr - Jun 2025
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Group Travelers Content -->
+                <div id="group-travelers" class="connect-content-section">
+                    <div class="location-list">
+                        <!-- Group Location Cards -->
+                        <div class="location-card" data-location="thailand">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80" alt="Thailand">
+                            </div>
+                            <div class="location-info">
+                                <h3>Bangkok, Thailand</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 15 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Nov - Jan 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="costa-rica">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1623866530982-3b26e0b17b6d?auto=format&fit=crop&w=800&q=80" alt="Costa Rica">
+                            </div>
+                            <div class="location-info">
+                                <h3>Costa Rica</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 12 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Jan - Mar 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="italy">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80" alt="Italy">
+                            </div>
+                            <div class="location-info">
+                                <h3>Italy</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 11 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: May - Jul 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="greece">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1530841377377-3ff06c0ca713?auto=format&fit=crop&w=800&q=80" alt="Greece">
+                            </div>
+                            <div class="location-info">
+                                <h3>Greek Islands</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 9 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Jun - Aug 2025
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location Detail Subpage (Initially Hidden) -->
+                <div id="location-detail" class="location-detail-page">
+                    <div class="location-detail-header">
+                        <button class="back-button">
+                            <i class="fas fa-arrow-left"></i> Back to locations
+                        </button>
+                        <h3 class="detail-location-name">Bali, Indonesia</h3>
+                    </div>
+                    
+                    <div class="travelers-graph">
+                        <div class="travelers-header">
+                            <h3>Travelers planning to visit</h3>
+                            <div class="travelers-filter">
+                                <span class="filter-item active">All</span>
+                                <span class="filter-item">Apr 2025</span>
+                                <span class="filter-item">May 2025</span>
+                                <span class="filter-item">Jun 2025</span>
+                            </div>
+                        </div>
+                        
+                        <div class="travelers-list">
+                            <!-- Template for travelers, will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Community Tab Content -->
+            <section id="community" class="content-section">
+                <div class="community-container">
+                    <div class="channels-list">
+                        <h3>Destination Channels</h3>
+                        
+                        <div class="channel-item active">
+                            <div class="channel-icon">
+                                <i class="fas fa-globe-asia"></i>
+                            </div>
+                            <div class="channel-name">South East Asia</div>
+                            <div class="channel-count">56</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-mountain"></i>
+                            </div>
+                            <div class="channel-name">European Alps</div>
+                            <div class="channel-count">32</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <div class="channel-name">Caribbean Islands</div>
+                            <div class="channel-count">45</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-city"></i>
+                            </div>
+                            <div class="channel-name">Nordic Cities</div>
+                            <div class="channel-count">28</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-gopuram"></i>
+                            </div>
+                            <div class="channel-name">India & Nepal</div>
+                            <div class="channel-count">51</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-pyramid"></i>
+                            </div>
+                            <div class="channel-name">Egypt & Morocco</div>
+                            <div class="channel-count">37</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-route"></i>
+                            </div>
+                            <div class="channel-name">Backpacking Routes</div>
+                            <div class="channel-count">64</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3 class="chat-title">South East Asia</h3>
+                            <div class="online-indicator">
+                                <div class="indicator-dot"></div>
+                                56 travelers online
+                            </div>
+                        </div>
+                        
+                        <div class="chat-messages">
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Alex T.</div>
+                                    <p>Has anyone taken the night train from Bangkok to Chiang Mai recently? How was your experience?</p>
+                                    <div class="message-time">2:45 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Priya M.</div>
+                                    <p>I did it last month! Surprisingly comfortable if you book the first-class sleeper. Takes about 13 hours. Bring snacks!</p>
+                                    <div class="message-time">2:47 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message sent">
+                                <div class="message-content">
+                                    <p>I'm planning to visit Thailand next month. Is Chiang Mai worth visiting over Phuket if I only have time for one?</p>
+                                    <div class="message-time">2:50 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Noah W.</div>
+                                    <p>Totally different experiences! Chiang Mai for culture, temples, and mountains. Phuket for beaches and island hopping. What are you more interested in?</p>
+                                    <div class="message-time">2:53 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Lin J.</div>
+                                    <p>Anyone want to meet up in Bangkok next week? I'll be staying near Khao San Road from Monday to Friday!</p>
+                                    <div class="message-time">3:01 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" placeholder="Type your message...">
+                            <button class="chat-send">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="camera-tool">
+                <i class="fas fa-camera"></i>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab Navigation
+            const tabs = document.querySelectorAll('.tab');
+            const tabHighlight = document.querySelector('.tab-highlight');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            function setActiveTab(tab) {
+                // Update active tab state
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Move highlight
+                const tabWidth = tab.offsetWidth;
+                const tabLeft = tab.offsetLeft;
+                tabHighlight.style.width = `${tabWidth}px`;
+                tabHighlight.style.transform = `translateX(${tabLeft}px)`;
+                
+                // Show corresponding content
+                const targetId = tab.getAttribute('data-tab');
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId) {
+                        setTimeout(() => {
+                            section.classList.add('active');
+                        }, 50);
+                    }
+                });
+            }
+            
+            // Set initial highlight position
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab) {
+                const tabWidth = activeTab.offsetWidth;
+                const tabLeft = activeTab.offsetLeft;
+                tabHighlight.style.width = `${tabWidth}px`;
+                tabHighlight.style.transform = `translateX(${tabLeft}px)`;
+            }
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    setActiveTab(tab);
+                });
+            });
+            
+            // Create hotspots on the map
+            const hotspotPositions = [
+                { x: 30, y: 40 }, // Southeast Asia
+                { x: 48, y: 28 }, // Europe
+                { x: 20, y: 60 }, // South America
+                { x: 75, y: 45 }, // Japan
+                { x: 60, y: 65 }  // Australia
+            ];
+            
+            const mapHotspots = document.querySelector('.map-hotspots');
+            
+            hotspotPositions.forEach(pos => {
+                const hotspot = document.createElement('div');
+                hotspot.className = 'hotspot';
+                hotspot.style.left = `${pos.x}%`;
+                hotspot.style.top = `${pos.y}%`;
+                
+                // Add random delay to pulse animation
+                const delay = Math.random() * 2;
+                hotspot.style.animationDelay = `${delay}s`;
+                
+                mapHotspots.appendChild(hotspot);
+            });
+            
+            // Connect tab inner navigation
+            const connectTabs = document.querySelectorAll('.connect-tab');
+            const connectTabHighlight = document.querySelector('.connect-tab-highlight');
+            const connectContentSections = document.querySelectorAll('.connect-content-section');
+            
+            function setActiveConnectTab(tab) {
+                // Update active tab state
+                connectTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Move highlight
+                const tabWidth = tab.offsetWidth;
+                const tabLeft = tab.offsetLeft;
+                connectTabHighlight.style.width = `${tabWidth}px`;
+                connectTabHighlight.style.transform = `translateX(${tabLeft}px)`;
+                
+                // Show corresponding content
+                const targetId = tab.getAttribute('data-connect-tab');
+                connectContentSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId + '-travelers') {
+                        setTimeout(() => {
+                            section.classList.add('active');
+                        }, 50);
+                    }
+                });
+            }
+            
+            // Set initial highlight position for connect tabs
+            const activeConnectTab = document.querySelector('.connect-tab.active');
+            if (activeConnectTab) {
+                const tabWidth = activeConnectTab.offsetWidth;
+                const tabLeft = activeConnectTab.offsetLeft;
+                connectTabHighlight.style.width = `${tabWidth}px`;
+                connectTabHighlight.style.transform = `translateX(${tabLeft}px)`;
+            }
+            
+            connectTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    setActiveConnectTab(tab);
+                });
+            });
+            
+            // Location cards click handling
+            const locationCards = document.querySelectorAll('.location-card');
+            const locationDetail = document.getElementById('location-detail');
+            const backButton = document.querySelector('.back-button');
+            const detailLocationName = document.querySelector('.detail-location-name');
+            const travelersList = document.querySelector('.travelers-list');
+            
+            // Sample traveler data (would come from API in real app)
+            const travelers = {
+                'bali': [
+                    { name: 'Emma S.', avatar: 'E', verified: true, dates: 'Apr 12 - May 3, 2025', interests: ['Photography', 'Beaches', 'Culture'], status: 'Solo traveler' },
+                    { name: 'Ryan K.', avatar: 'R', verified: true, dates: 'Apr 18 - May 10, 2025', interests: ['Surfing', 'Hiking', 'Food'], status: 'Solo traveler' },
+                    { name: 'Mia L.', avatar: 'M', verified: false, dates: 'May 5 - May 20, 2025', interests: ['Yoga', 'Meditation', 'Nature'], status: 'Solo traveler' },
+                    { name: 'Noah W.', avatar: 'N', verified: true, dates: 'May 15 - Jun 7, 2025', interests: ['Diving', 'Photography', 'Culture'], status: 'Solo traveler' },
+                    { name: 'Sophie J.', avatar: 'S', verified: false, dates: 'Jun 2 - Jun 23, 2025', interests: ['Temples', 'Local cuisine', 'Markets'], status: 'Solo traveler' }
+                ],
+                'japan': [
+                    { name: 'Alex T.', avatar: 'A', verified: true, dates: 'Mar 10 - Mar 25, 2025', interests: ['Food', 'Technology', 'History'], status: 'Solo traveler' },
+                    { name: 'Hannah P.', avatar: 'H', verified: true, dates: 'Apr 5 - Apr 20, 2025', interests: ['Anime', 'Photography', 'Architecture'], status: 'Solo traveler' },
+                    { name: 'Daniel M.', avatar: 'D', verified: false, dates: 'Apr 18 - May 2, 2025', interests: ['Temples', 'Hiking', 'Gardens'], status: 'Solo traveler' }
+                ],
+                'thailand': [
+                    { name: 'Adventure Seekers', avatar: 'A', verified: true, dates: 'Nov 10 - Nov 24, 2025', interests: ['Trekking', 'Islands', 'Markets'], status: '4 travelers' },
+                    { name: 'Global Nomads', avatar: 'G', verified: true, dates: 'Dec 15 - Jan 5, 2026', interests: ['Food tours', 'Temples', 'Wildlife'], status: '3 travelers' },
+                    { name: 'Backpackers United', avatar: 'B', verified: false, dates: 'Jan 8 - Jan 20, 2026', interests: ['Budget travel', 'Hostels', 'Local experiences'], status: '5 travelers' }
+                ]
+            };
+            
+            // Add click handler for location cards
+            locationCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const locationId = card.getAttribute('data-location');
+                    const locationName = card.querySelector('h3').textContent;
+                    
+                    // Set location name in detail view
+                    detailLocationName.textContent = locationName;
+                    
+                    // Clear previous travelers list
+                    travelersList.innerHTML = '';
+                    
+                    // Add travelers for this location if available
+                    if (travelers[locationId]) {
+                        travelers[locationId].forEach(traveler => {
+                            const travelerCard = document.createElement('div');
+                            travelerCard.className = 'traveler-card';
+                            
+                            const interestsHTML = traveler.interests.map(interest => `
+                                <div class="traveler-interest">${interest}</div>
+                            `).join('');
+                            
+                            travelerCard.innerHTML = `
+                                <div class="traveler-header">
+                                    <div class="traveler-avatar">${traveler.avatar}</div>
+                                    <div>
+                                        <div class="traveler-name">${traveler.name}</div>
+                                        <div class="traveler-status">${traveler.status} · ${traveler.verified ? 'Verified' : 'Basic'}</div>
+                                    </div>
+                                </div>
+                                <div class="traveler-dates">
+                                    <i class="fas fa-calendar"></i> ${traveler.dates}
+                                </div>
+                                <div class="traveler-interests">
+                                    ${interestsHTML}
+                                </div>
+                                <button class="connect-btn">
+                                    <i class="fas fa-user-plus"></i> Connect
+                                </button>
+                            `;
+                            
+                            travelersList.appendChild(travelerCard);
+                        });
+                    } else {
+                        // Show a message if no travelers are found
+                        travelersList.innerHTML = `
+                            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                                <i class="fas fa-user-slash" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 1rem; display: block;"></i>
+                                <p>No travelers available for this location yet.</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Show detail page with animation
+                    locationDetail.style.display = 'block';
+                    setTimeout(() => {
+                        locationDetail.classList.add('active');
+                    }, 10);
+                    
+                    // Animation for traveler cards
+                    setTimeout(() => {
+                        const travelerCards = document.querySelectorAll('.traveler-card');
+                        travelerCards.forEach((card, index) => {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                            
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, 100 + (index * 100));
+                        });
+                    }, 300);
+                });
+            });
+            
+            // Back button functionality
+            backButton.addEventListener('click', () => {
+                locationDetail.classList.remove('active');
+                setTimeout(() => {
+                    locationDetail.style.display = 'none';
+                }, 300);
+            });
+            
+            // Add animation for location cards
+            const cards = document.querySelectorAll('.location-card');
+            
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                
+                // Add event for Connect tab to animate cards entry
+                tabs[1].addEventListener('click', () => {
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100 + (index * 100));
+                });
+            });
+            
+            // Camera tool hover effect
+            const cameraTool = document.querySelector('.camera-tool');
+            
+            cameraTool.addEventListener('mouseenter', () => {
+                cameraTool.style.transform = 'scale(1.1)';
+                cameraTool.style.boxShadow = '0 8px 25px rgba(0, 120, 255, 0.5)';
+            });
+            
+            cameraTool.addEventListener('mouseleave', () => {
+                cameraTool.style.transform = 'scale(1)';
+                cameraTool.style.boxShadow = '0 5px 20px rgba(0, 120, 255, 0.4)';
+            });
+            
+            cameraTool.addEventListener('click', () => {
+                // Camera tool animation
+                cameraTool.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    cameraTool.style.transform = 'scale(1.1)';
+                }, 100);
+                setTimeout(() => {
+                    cameraTool.style.transform = 'scale(1)';
+                }, 200);
+                
+                // Show camera scan overlay - this would be implemented in a real app
+                // Simply showing an alert for demonstration
+                alert("Camera Recognition Tool activated! Take a photo of a landmark or location to identify it and find nearby travelers.");
+            });
+            
+            // Add chat interaction
+            const chatInput = document.querySelector('.chat-input');
+            const sendButton = document.querySelector('.chat-send');
+            const messagesContainer = document.querySelector('.chat-messages');
+            
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message) {
+                    const messageEl = document.createElement('div');
+                    messageEl.className = 'message sent';
+                    
+                    const now = new Date();
+                    const hours = now.getHours();
+                    const minutes = now.getMinutes();
+                    const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}`;
+                    
+                    messageEl.innerHTML = `
+                        <div class="message-content">
+                            <p>${message}</p>
+                            <div class="message-time">${formattedTime}</div>
+                        </div>
+                    `;
+                    
+                    messageEl.style.opacity = '0';
+                    messageEl.style.transform = 'translateY(10px)';
+                    
+                    messagesContainer.appendChild(messageEl);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    
+                    setTimeout(() => {
+                        messageEl.style.opacity = '1';
+                        messageEl.style.transform = 'translateY(0)';
+                        messageEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    }, 10);
+                    
+                    chatInput.value = '';
+                }
+            }
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Add simulated response after user sends message
+            document.querySelector('.chat-send').addEventListener('click', () => {
+                if (chatInput.value.trim()) {
+                    // Simulate typing indicator
+                    setTimeout(() => {
+                        // Random response selection
+                        const responses = [
+                            "I'm heading to Thailand next month too! Maybe we can meet up?",
+                            "I'd recommend Chiang Mai if you're into culture and food. The night markets are amazing!",
+                            "For your first time, I'd say split your time - 3 days Chiang Mai, 4 days in the islands.",
+                            "Don't miss the elephant sanctuaries in Chiang Mai if you go there!"
+                        ];
+                        
+                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                        const senders = ["Kai L.", "Emma S.", "Marco B.", "Sofia T."];
+                        const randomSender = senders[Math.floor(Math.random() * senders.length)];
+                        
+                        const messageEl = document.createElement('div');
+                        messageEl.className = 'message received';
+                        
+                        const now = new Date();
+                        const hours = now.getHours();
+                        const minutes = now.getMinutes();
+                        const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}`;
+                        
+                        messageEl.innerHTML = `
+                            <div class="message-content">
+                                <div class="message-sender">${randomSender}</div>
+                                <p>${randomResponse}</p>
+                                <div class="message-time">${formattedTime}</div>
+                            </div>
+                        `;
+                        
+                        messageEl.style.opacity = '0';
+                        messageEl.style.transform = 'translateY(10px)';
+                        
+                        setTimeout(() => {
+                            messagesContainer.appendChild(messageEl);
+                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                            
+                            setTimeout(() => {
+                                messageEl.style.opacity = '1';
+                                messageEl.style.transform = 'translateY(0)';
+                                messageEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            }, 10);
+                        }, 1500);
+                    }, 1000);
+                }
+            });
+            
+            // Connect filter tabs functionality
+            const filterItems = document.querySelectorAll('.filter-item');
+            filterItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    filterItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // In a real app, this would filter the travelers list
+                    // For demo, just show a visual effect
+                    const travelers = document.querySelectorAll('.traveler-card');
+                    travelers.forEach(traveler => {
+                        traveler.style.opacity = '0.5';
+                        traveler.style.transform = 'scale(0.98)';
+                        
+                        setTimeout(() => {
+                            traveler.style.opacity = '1';
+                            traveler.style.transform = 'scale(1)';
+                        }, 300);
+                    });
+                });
+            });
+            
+            // Profile overlay functionality
+            const profileTrigger = document.getElementById('profile-trigger');
+            const profileOverlay = document.getElementById('profile-overlay');
+            const closeProfile = document.querySelector('.close-profile');
+            const profileTabs = document.querySelectorAll('.profile-tab');
+            const profileContentSections = document.querySelectorAll('.profile-content-section');
+            
+            // Open profile overlay
+            profileTrigger.addEventListener('click', () => {
+                profileOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            });
+            
+            // Close profile overlay
+            closeProfile.addEventListener('click', () => {
+                profileOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Enable scrolling
+            });
+            
+            // Close overlay when clicking outside of content
+            profileOverlay.addEventListener('click', (e) => {
+                if (e.target === profileOverlay) {
+                    profileOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // Profile tab switching
+            profileTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    profileTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    const targetId = tab.getAttribute('data-profile-tab') + '-tab';
+                    profileContentSections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === targetId) {
+                            setTimeout(() => {
+                                section.classList.add('active');
+                            }, 50);
+                        }
+                    });
+                });
+            });
+            
+            // Form handling
+            const profileForm = document.getElementById('profile-form');
+            const preferencesForm = document.getElementById('preferences-form');
+            
+            // Profile form submission
+            profileForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = new FormData(profileForm);
+                const userData = {};
+                
+                formData.forEach((value, key) => {
+                    userData[key] = value;
+                });
+                
+                // This would send the data to the backend in a real app
+                console.log('Profile data to be sent to backend:', userData);
+                
+                // Show success message
+                showNotification('Profile updated successfully!');
+            });
+            
+            // Preferences form submission
+            preferencesForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = new FormData(preferencesForm);
+                const preferencesData = {
+                    travelStyle: formData.getAll('travelStyle'),
+                    accommodation: formData.getAll('accommodation'),
+                    interests: Array.from(document.querySelectorAll('.interest-tag')).map(tag => 
+                        tag.textContent.trim().replace(' ×', '')
+                    ),
+                    budget: formData.get('budget'),
+                    pace: formData.get('pace'),
+                    planning: formData.get('planning'),
+                };
+                
+                // This would send the data to the backend in a real app
+                console.log('Preferences data to be sent to backend:', preferencesData);
+                
+                // Show success message
+                showNotification('Preferences updated successfully!');
+            });
+            
+            // Interest tags functionality
+            const interestTagsEditor = document.querySelector('.interest-tags-editor');
+            const addInterestInput = document.querySelector('.add-interest-input');
+            
+            // Add new interest tag when Enter is pressed
+            addInterestInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && addInterestInput.value.trim()) {
+                    const newTag = document.createElement('div');
+                    newTag.className = 'interest-tag';
+                    newTag.innerHTML = `${addInterestInput.value.trim()} <i class="fas fa-times remove-tag"></i>`;
+                    
+                    // Insert before the input
+                    interestTagsEditor.insertBefore(newTag, addInterestInput);
+                    
+                    // Clear input
+                    addInterestInput.value = '';
+                    
+                    // Add event listener to new remove button
+                    newTag.querySelector('.remove-tag').addEventListener('click', function() {
+                        this.parentElement.remove();
+                    });
+                }
+            });
+            
+            // Remove interest tag when X is clicked
+            document.querySelectorAll('.remove-tag').forEach(removeBtn => {
+                removeBtn.addEventListener('click', function() {
+                    this.parentElement.remove();
+                });
+            });
+            
+            // Handle invite buttons
+            const acceptBtns = document.querySelectorAll('.accept-btn');
+            const declineBtns = document.querySelectorAll('.decline-btn');
+            const cancelBtns = document.querySelectorAll('.cancel-btn');
+            
+            acceptBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const inviteItem = this.closest('.invite-item');
+                    inviteItem.style.opacity = '0.5';
+                    setTimeout(() => {
+                        // In a real app, this would send data to backend
+                        inviteItem.innerHTML = `
+                            <div class="invite-avatar">${inviteItem.querySelector('.invite-avatar').textContent}</div>
+                            <div class="invite-info">
+                                <h4>${inviteItem.querySelector('h4').textContent}</h4>
+                                <div class="invite-details">
+                                    ${inviteItem.querySelector('.invite-details').innerHTML}
+                                </div>
+                                <div class="invite-status accepted">
+                                    <i class="fas fa-check-circle"></i> You have accepted this invite
+                                </div>
+                            </div>
+                            <div class="invite-actions">
+                                <button class="message-btn" style="width: auto; padding: 0.6rem 1rem;">
+                                    <i class="fas fa-comment"></i> Message
+                                </button>
+                            </div>
+                        `;
+                        inviteItem.style.opacity = '1';
+                    }, 300);
+                });
+            });
+            
+            declineBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const inviteItem = this.closest('.invite-item');
+                    inviteItem.style.opacity = '0.5';
+                    setTimeout(() => {
+                        inviteItem.style.height = '0';
+                        inviteItem.style.padding = '0';
+                        inviteItem.style.margin = '0';
+                        inviteItem.style.overflow = 'hidden';
+                        setTimeout(() => {
+                            inviteItem.remove();
+                        }, 300);
+                    }, 300);
+                });
+            });
+            
+            cancelBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const inviteItem = this.closest('.invite-item');
+                    inviteItem.style.opacity = '0.5';
+                    setTimeout(() => {
+                        inviteItem.style.height = '0';
+                        inviteItem.style.padding = '0';
+                        inviteItem.style.margin = '0';
+                        inviteItem.style.overflow = 'hidden';
+                        setTimeout(() => {
+                            inviteItem.remove();
+                        }, 300);
+                    }, 300);
+                });
+            });
+            
+            // Function to show a notification
+            function showNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <i class="fas fa-check-circle"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                // Add notification styles
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.background = 'var(--primary)';
+                notification.style.color = 'white';
+                notification.style.padding = '1rem 1.5rem';
+                notification.style.borderRadius = '8px';
+                notification.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.3)';
+                notification.style.zIndex = '3000';
+                notification.style.display = 'flex';
+                notification.style.alignItems = 'center';
+                notification.style.gap = '0.5rem';
+                notification.style.transform = 'translateY(100px)';
+                notification.style.opacity = '0';
+                notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                
+                document.body.appendChild(notification);
+                
+                // Animate notification in
+                setTimeout(() => {
+                    notification.style.transform = 'translateY(0)';
+                    notification.style.opacity = '1';
+                }, 10);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateY(100px)';
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
