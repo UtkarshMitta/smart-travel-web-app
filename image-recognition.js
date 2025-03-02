@@ -306,7 +306,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingArea.appendChild(statusElement);
         loadingArea.appendChild(progressElement);
     }
-    }
 
     /**
      * Display the analysis results
