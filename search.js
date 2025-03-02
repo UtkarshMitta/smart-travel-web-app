@@ -499,7 +499,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function fallbackScoring(query) {
         throw new Error('API call failed and fallbacks are disabled');
     }
-    }
+    })
     
     /**
      * Find matching destinations based on keyword scores
