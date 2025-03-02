@@ -14,6 +14,15 @@ const API = {
     },
     
     /**
+     * Proxy Claude API calls through the backend to avoid CORS issues and hide API key
+     * @param {object} requestData - Request data to send to Claude API
+     * @returns {Promise} - Promise that resolves with the API response
+     */
+    proxyClaudeApi: function(requestData) {
+        return this.post('proxyClaudeApi', requestData);
+    },
+    
+    /**
      * Make a GET request to the API
      * @param {string} action - The API action to call
      * @param {object} params - Additional parameters

@@ -258,8 +258,8 @@ function initializeApiKeysSheet(ss) {
     // Add a row for the Claude API key
     const timestamp = new Date().toISOString();
     const claudeKeyRow = [
-      'CLAUDE_KE', 
-      'YOUR_CLAUDE_KE_HERE', 
+      'CLAUDE_API_KEY', 
+      'YOUR_CLAUDE_API_KEY_HERE', 
       'API key for Claude AI used in smart search', 
       timestamp
     ];
@@ -1202,13 +1202,22 @@ function getApiKey(keyName) {
 }
 
 /**
- * Proxy for Claude API to avoid CORS issues
- * @param {string} apiKey - Claude API key
+ * Proxy for Claude API to avoid CORS issues and secure API key
  * @param {object} requestData - Request data to send to Claude API
  * @returns {object} - Response from Claude API
  */
-function proxyClaudeApi(apiKey, requestData) {
+function proxyClaudeApi(requestData) {
   try {
+    // Get the API key from the database
+    const apiKey = getApiKey('CLAUDE_API_KEY');
+    
+    if (!apiKey) {
+      return {
+        success: false,
+        message: 'API key not found or invalid'
+      };
+    }
+    
     // Make the request to Claude API from the server side
     const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
       method: 'post',
@@ -1266,25 +1275,14 @@ function doGet(e) {
     // Execute the action
     switch (action) {
       case 'proxyClaudeApi':
-        // Get API key from the database
-        const apiKey = getApiKey('CLAUDE_API_KEY');
-        if (!apiKey) {
-          result = { success: false, message: 'API key not found' };
-        } else {
-          // Extract the request data from the parameters
-          const requestData = data || params;
-          result = proxyClaudeApi(apiKey, requestData);
-        }
+        // Extract the request data from the parameters
+        const requestData = data || params;
+        result = proxyClaudeApi(requestData);
         break;
         
       case 'getApiKey':
-        // Only return API key if it matches the expected key name
-        if ((data || params).keyName === 'CLAUDE_API_KEY') {
-          const apiKey = getApiKey('CLAUDE_API_KEY');
-          result = { success: true, apiKey: apiKey };
-        } else {
-          result = { success: false, message: 'Invalid API key request' };
-        }
+        // This endpoint is no longer needed since the API key is now handled by the backend
+        result = { success: false, message: 'This endpoint is deprecated. Use proxyClaudeApi instead.' };
         break;
       case 'signup':
         result = createUser(data || params);

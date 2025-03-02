@@ -2,6 +2,9 @@
  * Smart Search functionality using Claude AI
  */
 document.addEventListener('DOMContentLoaded', async function() {
+    // No need to initialize Claude API key as we now use backend proxy
+    
+    
     // Predefined keywords that map to locations in the database
     const PREDEFINED_KEYWORDS = [
         'beach', 'mountain', 'island', 'city', 'adventure', 'cultural', 
@@ -155,14 +158,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     /**
-     * Call Claude API through backend proxy to analyze the search query
+     * Call Claude API to analyze the search query (via backend proxy)
      * @param {string} query - The search query
      * @returns {Promise<Object>} - Object with keyword scores
      */
     async function analyzeQueryWithClaude(query) {
         try {
-            // Prepare the Claude API request payload
-            const requestPayload = {
+            // Call the backend proxy for Claude API instead of calling it directly
+            const requestData = {
                 model: 'claude-3-7-sonnet-20250219',
                 max_tokens: 1024,
                 messages: [
@@ -180,19 +183,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                     }
                 ]
             };
-
-            // Use our backend proxy instead of calling Claude directly
-            const response = await API.post('proxyClaudeApi', requestPayload);
+            
+            // Use our API service to call the backend proxy
+            const response = await API.proxyClaudeApi(requestData);
             
             if (!response.success) {
-                throw new Error(`API proxy request failed: ${response.message || 'Unknown error'}`);
+                throw new Error(`API request failed: ${response.message}`);
             }
+            
+            const data = response.data;
             
             // Extract the JSON object from Claude's response
             let keywordScores = {};
             try {
                 // Try to parse the content directly
-                const content = response.data.content[0].text;
+                const content = data.content[0].text;
                 
                 // Use regex to extract the JSON object from the response
                 const jsonMatch = content.match(/\{[\s\S]*\}/);
