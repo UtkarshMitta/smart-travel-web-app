@@ -1636,18 +1636,35 @@
         <header>
             <a href="#" class="logo">Cluster</a>
             <div class="user-profile" id="profile-trigger">
-                <div class="user-avatar">E</div>
+                <div class="user-avatar" id="user-avatar">E</div>
             </div>
         </header>
+        
+        <!-- Auth check overlay for non-logged in users -->
+        <div id="auth-overlay" class="profile-overlay">
+            <div class="auth-container" style="background-color: var(--dark-surface); border-radius: 16px; padding: 2rem; max-width: 500px; text-align: center;">
+                <h2 style="margin-bottom: 1rem;">Login Required</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">You need to be logged in to access this feature.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="login.html" class="login-btn" style="background: var(--primary); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-block;">Login</a>
+                    <a href="signup.html" class="signup-btn" style="background: var(--dark-surface-2); color: var(--text); border: 1px solid var(--border); padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 500; text-decoration: none; display: inline-block;">Sign Up</a>
+                </div>
+            </div>
+        </div>
         
         <!-- Profile Page Overlay -->
         <div id="profile-overlay" class="profile-overlay">
             <div class="profile-container">
                 <div class="profile-header">
                     <h2>Your Profile</h2>
-                    <button class="close-profile">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="logout-btn" class="logout-btn" style="background: var(--dark-surface-2); border: none; color: var(--text-secondary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                        <button class="close-profile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="profile-tabs-container">
@@ -2463,6 +2480,182 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // API constants
+            const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxUdsoSMawsnWvS7DNy9IeGEssK5SU2zAUMhUkz_N2aTU4fk3Q7R_S6kJqs9bQAW5DnfQ/exec';
+            
+            // Authentication check
+            const authOverlay = document.getElementById('auth-overlay');
+            const userAvatar = document.getElementById('user-avatar');
+            let currentUser = null;
+            
+            // Try to get user from local storage
+            function checkUserAuthentication() {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    try {
+                        currentUser = JSON.parse(storedUser);
+                        if (currentUser && currentUser.token) {
+                            // User is logged in
+                            // Set user initial in avatar
+                            if (currentUser.firstName) {
+                                userAvatar.textContent = currentUser.firstName.charAt(0);
+                            }
+                            return true;
+                        }
+                    } catch (error) {
+                        console.error('Error parsing user data:', error);
+                        localStorage.removeItem('user');
+                    }
+                }
+                return false;
+            }
+            
+            // Initial authentication check
+            const isAuthenticated = checkUserAuthentication();
+            
+            // Show auth overlay for protected actions
+            function requireAuth(callback) {
+                if (isAuthenticated) {
+                    if (callback) callback();
+                } else {
+                    authOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+            
+            // Close auth overlay when clicking outside content
+            authOverlay.addEventListener('click', (e) => {
+                if (e.target === authOverlay) {
+                    authOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // Function to make authenticated API calls
+            async function apiCall(action, method = 'GET', data = null) {
+                try {
+                    const url = `${API_BASE_URL}?action=${action}`;
+                    const options = {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    };
+                    
+                    if (data) {
+                        options.body = JSON.stringify(data);
+                    }
+                    
+                    // Add auth token if user is logged in
+                    if (currentUser && currentUser.token) {
+                        options.headers['Authorization'] = `Bearer ${currentUser.token}`;
+                    }
+                    
+                    const response = await fetch(url, options);
+                    return await response.json();
+                } catch (error) {
+                    console.error(`API error (${action}):`, error);
+                    return { success: false, message: 'Network error. Please try again.' };
+                }
+            }
+            
+            // Function to fetch destinations
+            async function fetchDestinations() {
+                const response = await apiCall('getDestinations');
+                if (response.success && response.destinations) {
+                    return response.destinations;
+                }
+                return null;
+            }
+            
+            // Function to fetch travelers for a destination
+            async function fetchTravelers(destinationId) {
+                const response = await apiCall('getTravelers', 'POST', { destinationId });
+                if (response.success && response.travelers) {
+                    return response.travelers;
+                }
+                return null;
+            }
+            
+            // Function to fetch user profile
+            async function fetchUserProfile() {
+                if (!isAuthenticated) return null;
+                
+                const response = await apiCall('getUserProfile');
+                if (response.success && response.profile) {
+                    return response.profile;
+                }
+                return null;
+            }
+            
+            // Function to update user profile
+            async function updateUserProfile(profileData) {
+                if (!isAuthenticated) return false;
+                
+                const response = await apiCall('updateProfile', 'POST', profileData);
+                return response.success;
+            }
+            
+            // Function to send chat message
+            async function sendChatMessage(channelId, messageText) {
+                if (!isAuthenticated) return false;
+                
+                const response = await apiCall('sendMessage', 'POST', {
+                    channelId,
+                    message: messageText
+                });
+                
+                return response.success;
+            }
+            
+            // Function to fetch channel messages
+            async function fetchChannelMessages(channelId) {
+                const response = await apiCall('getChannelMessages', 'POST', { channelId });
+                if (response.success && response.messages) {
+                    return response.messages;
+                }
+                return [];
+            }
+            
+            // Function to connect with traveler
+            async function connectWithTraveler(travelerId) {
+                if (!isAuthenticated) {
+                    requireAuth();
+                    return false;
+                }
+                
+                const response = await apiCall('connectTraveler', 'POST', { travelerId });
+                return response.success;
+            }
+            
+            // Initialize user profile if logged in
+            async function initUserProfile() {
+                if (isAuthenticated) {
+                    try {
+                        const profileData = await fetchUserProfile();
+                        if (profileData) {
+                            // Populate profile form fields
+                            document.getElementById('firstName').value = profileData.firstName || '';
+                            document.getElementById('lastName').value = profileData.lastName || '';
+                            document.getElementById('email').value = profileData.email || '';
+                            document.getElementById('phone').value = profileData.phone || '';
+                            document.getElementById('bio').value = profileData.bio || '';
+                            document.getElementById('location').value = profileData.location || '';
+                            
+                            // Update initials in profile
+                            const profileAvatarLarge = document.querySelector('.profile-avatar-large');
+                            if (profileAvatarLarge && profileData.firstName) {
+                                profileAvatarLarge.textContent = profileData.firstName.charAt(0);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error initializing profile:', error);
+                    }
+                }
+            }
+            
+            // Call initUserProfile to load user data if logged in
+            initUserProfile();
             // Tab Navigation
             const tabs = document.querySelectorAll('.tab');
             const tabHighlight = document.querySelector('.tab-highlight');
@@ -2580,32 +2773,45 @@
             const detailLocationName = document.querySelector('.detail-location-name');
             const travelersList = document.querySelector('.travelers-list');
             
-            // Sample traveler data (would come from API in real app)
-            const travelers = {
-                'bali': [
-                    { name: 'Emma S.', avatar: 'E', verified: true, dates: 'Apr 12 - May 3, 2025', interests: ['Photography', 'Beaches', 'Culture'], status: 'Solo traveler' },
-                    { name: 'Ryan K.', avatar: 'R', verified: true, dates: 'Apr 18 - May 10, 2025', interests: ['Surfing', 'Hiking', 'Food'], status: 'Solo traveler' },
-                    { name: 'Mia L.', avatar: 'M', verified: false, dates: 'May 5 - May 20, 2025', interests: ['Yoga', 'Meditation', 'Nature'], status: 'Solo traveler' },
-                    { name: 'Noah W.', avatar: 'N', verified: true, dates: 'May 15 - Jun 7, 2025', interests: ['Diving', 'Photography', 'Culture'], status: 'Solo traveler' },
-                    { name: 'Sophie J.', avatar: 'S', verified: false, dates: 'Jun 2 - Jun 23, 2025', interests: ['Temples', 'Local cuisine', 'Markets'], status: 'Solo traveler' }
-                ],
-                'japan': [
-                    { name: 'Alex T.', avatar: 'A', verified: true, dates: 'Mar 10 - Mar 25, 2025', interests: ['Food', 'Technology', 'History'], status: 'Solo traveler' },
-                    { name: 'Hannah P.', avatar: 'H', verified: true, dates: 'Apr 5 - Apr 20, 2025', interests: ['Anime', 'Photography', 'Architecture'], status: 'Solo traveler' },
-                    { name: 'Daniel M.', avatar: 'D', verified: false, dates: 'Apr 18 - May 2, 2025', interests: ['Temples', 'Hiking', 'Gardens'], status: 'Solo traveler' }
-                ],
-                'thailand': [
-                    { name: 'Adventure Seekers', avatar: 'A', verified: true, dates: 'Nov 10 - Nov 24, 2025', interests: ['Trekking', 'Islands', 'Markets'], status: '4 travelers' },
-                    { name: 'Global Nomads', avatar: 'G', verified: true, dates: 'Dec 15 - Jan 5, 2026', interests: ['Food tours', 'Temples', 'Wildlife'], status: '3 travelers' },
-                    { name: 'Backpackers United', avatar: 'B', verified: false, dates: 'Jan 8 - Jan 20, 2026', interests: ['Budget travel', 'Hostels', 'Local experiences'], status: '5 travelers' }
-                ]
-            };
+            // Initialize destinations
+            async function initializeDestinations() {
+                try {
+                    // Try to fetch destinations from API
+                    const destinations = await fetchDestinations();
+                    
+                    if (destinations && destinations.length > 0) {
+                        // Update location counts and data from API
+                        destinations.forEach(destination => {
+                            const card = document.querySelector(`.location-card[data-location="${destination.id}"]`);
+                            if (card) {
+                                const travelerCountEl = card.querySelector('.traveler-count');
+                                if (travelerCountEl) {
+                                    const countText = destination.isSolo ? 
+                                        `<i class="fas fa-user"></i> ${destination.travelerCount} solo travelers` :
+                                        `<i class="fas fa-users"></i> ${destination.groupCount} groups`;
+                                    travelerCountEl.innerHTML = countText;
+                                }
+                                
+                                const datesEl = card.querySelector('.travel-dates');
+                                if (datesEl && destination.popularDates) {
+                                    datesEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${destination.popularDates}`;
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error initializing destinations:', error);
+                }
+            }
+            
+            // Initialize destinations
+            initializeDestinations();
             
             // Add click handler for location cards
             locationCards.forEach(card => {
-                card.addEventListener('click', () => {
-                    const locationId = card.getAttribute('data-location');
-                    const locationName = card.querySelector('h3').textContent;
+                card.addEventListener('click', async function() {
+                    const locationId = this.getAttribute('data-location');
+                    const locationName = this.querySelector('h3').textContent;
                     
                     // Set location name in detail view
                     detailLocationName.textContent = locationName;
@@ -2613,46 +2819,13 @@
                     // Clear previous travelers list
                     travelersList.innerHTML = '';
                     
-                    // Add travelers for this location if available
-                    if (travelers[locationId]) {
-                        travelers[locationId].forEach(traveler => {
-                            const travelerCard = document.createElement('div');
-                            travelerCard.className = 'traveler-card';
-                            
-                            const interestsHTML = traveler.interests.map(interest => `
-                                <div class="traveler-interest">${interest}</div>
-                            `).join('');
-                            
-                            travelerCard.innerHTML = `
-                                <div class="traveler-header">
-                                    <div class="traveler-avatar">${traveler.avatar}</div>
-                                    <div>
-                                        <div class="traveler-name">${traveler.name}</div>
-                                        <div class="traveler-status">${traveler.status} · ${traveler.verified ? 'Verified' : 'Basic'}</div>
-                                    </div>
-                                </div>
-                                <div class="traveler-dates">
-                                    <i class="fas fa-calendar"></i> ${traveler.dates}
-                                </div>
-                                <div class="traveler-interests">
-                                    ${interestsHTML}
-                                </div>
-                                <button class="connect-btn">
-                                    <i class="fas fa-user-plus"></i> Connect
-                                </button>
-                            `;
-                            
-                            travelersList.appendChild(travelerCard);
-                        });
-                    } else {
-                        // Show a message if no travelers are found
-                        travelersList.innerHTML = `
-                            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-                                <i class="fas fa-user-slash" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 1rem; display: block;"></i>
-                                <p>No travelers available for this location yet.</p>
-                            </div>
-                        `;
-                    }
+                    // Show loading indicator
+                    travelersList.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                            <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
+                            <p style="margin-top: 1rem; color: var(--text-secondary);">Loading travelers...</p>
+                        </div>
+                    `;
                     
                     // Show detail page with animation
                     locationDetail.style.display = 'block';
@@ -2660,20 +2833,115 @@
                         locationDetail.classList.add('active');
                     }, 10);
                     
-                    // Animation for traveler cards
-                    setTimeout(() => {
-                        const travelerCards = document.querySelectorAll('.traveler-card');
-                        travelerCards.forEach((card, index) => {
-                            card.style.opacity = '0';
-                            card.style.transform = 'translateY(20px)';
-                            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                            
-                            setTimeout(() => {
-                                card.style.opacity = '1';
-                                card.style.transform = 'translateY(0)';
-                            }, 100 + (index * 100));
-                        });
-                    }, 300);
+                    try {
+                        // Fetch travelers for this location
+                        const travelers = await fetchTravelers(locationId);
+                        
+                        // Clear loading indicator
+                        travelersList.innerHTML = '';
+                        
+                        if (travelers && travelers.length > 0) {
+                            // Add travelers to the list
+                            travelers.forEach(traveler => {
+                                const travelerCard = document.createElement('div');
+                                travelerCard.className = 'traveler-card';
+                                travelerCard.setAttribute('data-traveler-id', traveler.id);
+                                
+                                const interestsHTML = traveler.interests.map(interest => `
+                                    <div class="traveler-interest">${interest}</div>
+                                `).join('');
+                                
+                                travelerCard.innerHTML = `
+                                    <div class="traveler-header">
+                                        <div class="traveler-avatar">${traveler.avatar || traveler.name.charAt(0)}</div>
+                                        <div>
+                                            <div class="traveler-name">${traveler.name}</div>
+                                            <div class="traveler-status">${traveler.status} · ${traveler.verified ? 'Verified' : 'Basic'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="traveler-dates">
+                                        <i class="fas fa-calendar"></i> ${traveler.dates}
+                                    </div>
+                                    <div class="traveler-interests">
+                                        ${interestsHTML}
+                                    </div>
+                                    <button class="connect-btn">
+                                        <i class="fas fa-user-plus"></i> Connect
+                                    </button>
+                                `;
+                                
+                                travelersList.appendChild(travelerCard);
+                                
+                                // Add connect button event listener
+                                const connectBtn = travelerCard.querySelector('.connect-btn');
+                                connectBtn.addEventListener('click', async function(e) {
+                                    e.stopPropagation();
+                                    
+                                    if (!isAuthenticated) {
+                                        requireAuth();
+                                        return;
+                                    }
+                                    
+                                    const travelerId = travelerCard.getAttribute('data-traveler-id');
+                                    
+                                    // Set loading state
+                                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                                    this.disabled = true;
+                                    
+                                    try {
+                                        const success = await connectWithTraveler(travelerId);
+                                        
+                                        if (success) {
+                                            this.innerHTML = '<i class="fas fa-check"></i> Connected';
+                                            this.style.background = '#4ade80';
+                                            showNotification('Connection request sent successfully!');
+                                        } else {
+                                            this.innerHTML = '<i class="fas fa-user-plus"></i> Connect';
+                                            this.disabled = false;
+                                            showNotification('Failed to connect. Please try again.', 'error');
+                                        }
+                                    } catch (error) {
+                                        console.error('Error connecting with traveler:', error);
+                                        this.innerHTML = '<i class="fas fa-user-plus"></i> Connect';
+                                        this.disabled = false;
+                                        showNotification('An error occurred. Please try again.', 'error');
+                                    }
+                                });
+                            });
+                        } else {
+                            // Show a message if no travelers are found
+                            travelersList.innerHTML = `
+                                <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                                    <i class="fas fa-user-slash" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 1rem; display: block;"></i>
+                                    <p>No travelers available for this location yet.</p>
+                                </div>
+                            `;
+                        }
+                        
+                        // Animation for traveler cards
+                        setTimeout(() => {
+                            const travelerCards = document.querySelectorAll('.traveler-card');
+                            travelerCards.forEach((card, index) => {
+                                card.style.opacity = '0';
+                                card.style.transform = 'translateY(20px)';
+                                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                                
+                                setTimeout(() => {
+                                    card.style.opacity = '1';
+                                    card.style.transform = 'translateY(0)';
+                                }, 100 + (index * 100));
+                            });
+                        }, 100);
+                        
+                    } catch (error) {
+                        console.error('Error fetching travelers:', error);
+                        travelersList.innerHTML = `
+                            <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem; display: block;"></i>
+                                <p>Failed to load travelers. Please try again.</p>
+                            </div>
+                        `;
+                    }
                 });
             });
             
@@ -2734,55 +3002,122 @@
             const chatInput = document.querySelector('.chat-input');
             const sendButton = document.querySelector('.chat-send');
             const messagesContainer = document.querySelector('.chat-messages');
+            const chatTitle = document.querySelector('.chat-title');
+            let currentChannelId = 'south-east-asia'; // Default channel
             
-            function sendMessage() {
-                const message = chatInput.value.trim();
-                if (message) {
-                    const messageEl = document.createElement('div');
-                    messageEl.className = 'message sent';
+            // Load channel messages on initialization
+            async function loadChannelMessages(channelId) {
+                if (!channelId) return;
+                
+                const messages = await fetchChannelMessages(channelId);
+                
+                // Clear existing messages
+                messagesContainer.innerHTML = '';
+                
+                // Add messages to the container
+                if (messages && messages.length > 0) {
+                    messages.forEach(msg => {
+                        const messageEl = document.createElement('div');
+                        messageEl.className = msg.isCurrentUser ? 'message sent' : 'message received';
+                        
+                        const formattedTime = formatTime(new Date(msg.timestamp));
+                        
+                        messageEl.innerHTML = `
+                            <div class="message-content">
+                                ${!msg.isCurrentUser ? `<div class="message-sender">${msg.senderName}</div>` : ''}
+                                <p>${msg.text}</p>
+                                <div class="message-time">${formattedTime}</div>
+                            </div>
+                        `;
+                        
+                        messagesContainer.appendChild(messageEl);
+                    });
                     
-                    const now = new Date();
-                    const hours = now.getHours();
-                    const minutes = now.getMinutes();
-                    const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}`;
-                    
-                    messageEl.innerHTML = `
-                        <div class="message-content">
-                            <p>${message}</p>
-                            <div class="message-time">${formattedTime}</div>
-                        </div>
-                    `;
-                    
-                    messageEl.style.opacity = '0';
-                    messageEl.style.transform = 'translateY(10px)';
-                    
-                    messagesContainer.appendChild(messageEl);
+                    // Scroll to bottom
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    
-                    setTimeout(() => {
-                        messageEl.style.opacity = '1';
-                        messageEl.style.transform = 'translateY(0)';
-                        messageEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    }, 10);
-                    
-                    chatInput.value = '';
                 }
             }
             
-            sendButton.addEventListener('click', sendMessage);
+            // Format time for messages
+            function formatTime(date) {
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                return `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}`;
+            }
             
-            chatInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
+            // Load initial messages
+            setTimeout(() => {
+                loadChannelMessages(currentChannelId);
+            }, 500);
+            
+            // Channel item click handler
+            const channelItems = document.querySelectorAll('.channel-item');
+            channelItems.forEach(item => {
+                item.addEventListener('click', async function() {
+                    // Update active state
+                    channelItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Get channel name
+                    const channelName = this.querySelector('.channel-name').textContent;
+                    chatTitle.textContent = channelName;
+                    
+                    // Use a sanitized version of the name as ID (for demo)
+                    currentChannelId = channelName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                    
+                    // Load messages
+                    await loadChannelMessages(currentChannelId);
+                });
             });
             
-            // Add simulated response after user sends message
-            document.querySelector('.chat-send').addEventListener('click', () => {
-                if (chatInput.value.trim()) {
-                    // Simulate typing indicator
-                    setTimeout(() => {
-                        // Random response selection
+            // Send message function
+            async function sendMessage() {
+                if (!isAuthenticated) {
+                    requireAuth();
+                    return;
+                }
+                
+                const message = chatInput.value.trim();
+                if (!message) return;
+                
+                // Create message element
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message sent';
+                
+                const now = new Date();
+                const formattedTime = formatTime(now);
+                
+                messageEl.innerHTML = `
+                    <div class="message-content">
+                        <p>${message}</p>
+                        <div class="message-time">${formattedTime}</div>
+                    </div>
+                `;
+                
+                messageEl.style.opacity = '0';
+                messageEl.style.transform = 'translateY(10px)';
+                
+                // Add to message container
+                messagesContainer.appendChild(messageEl);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                setTimeout(() => {
+                    messageEl.style.opacity = '1';
+                    messageEl.style.transform = 'translateY(0)';
+                    messageEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                }, 10);
+                
+                // Send to server
+                const messageText = chatInput.value;
+                chatInput.value = '';
+                
+                try {
+                    await sendChatMessage(currentChannelId, messageText);
+                    
+                    // For demo purposes, simulate a response after a delay
+                    setTimeout(async () => {
+                        // Get response from server (in a real app)
+                        // For demo, use hardcoded responses
                         const responses = [
                             "I'm heading to Thailand next month too! Maybe we can meet up?",
                             "I'd recommend Chiang Mai if you're into culture and food. The night markets are amazing!",
@@ -2794,36 +3129,44 @@
                         const senders = ["Kai L.", "Emma S.", "Marco B.", "Sofia T."];
                         const randomSender = senders[Math.floor(Math.random() * senders.length)];
                         
-                        const messageEl = document.createElement('div');
-                        messageEl.className = 'message received';
+                        const responseEl = document.createElement('div');
+                        responseEl.className = 'message received';
                         
-                        const now = new Date();
-                        const hours = now.getHours();
-                        const minutes = now.getMinutes();
-                        const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes} ${hours >= 12 ? 'PM' : 'AM'}`;
-                        
-                        messageEl.innerHTML = `
+                        responseEl.innerHTML = `
                             <div class="message-content">
                                 <div class="message-sender">${randomSender}</div>
                                 <p>${randomResponse}</p>
-                                <div class="message-time">${formattedTime}</div>
+                                <div class="message-time">${formatTime(new Date())}</div>
                             </div>
                         `;
                         
-                        messageEl.style.opacity = '0';
-                        messageEl.style.transform = 'translateY(10px)';
+                        responseEl.style.opacity = '0';
+                        responseEl.style.transform = 'translateY(10px)';
+                        
+                        messagesContainer.appendChild(responseEl);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
                         
                         setTimeout(() => {
-                            messagesContainer.appendChild(messageEl);
-                            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                            
-                            setTimeout(() => {
-                                messageEl.style.opacity = '1';
-                                messageEl.style.transform = 'translateY(0)';
-                                messageEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            }, 10);
-                        }, 1500);
-                    }, 1000);
+                            responseEl.style.opacity = '1';
+                            responseEl.style.transform = 'translateY(0)';
+                            responseEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        }, 10);
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    showNotification('Failed to send message. Please try again.', 'error');
+                }
+            }
+            
+            // Button click handler
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Enter key handler
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
                 }
             });
             
@@ -2876,6 +3219,23 @@
                 }
             });
             
+            // Logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function() {
+                    try {
+                        // Call logout API endpoint
+                        await apiCall('logout', 'POST');
+                    } catch (error) {
+                        console.error('Error logging out:', error);
+                    } finally {
+                        // Clear local storage and redirect to login page
+                        localStorage.removeItem('user');
+                        window.location.href = 'login.html';
+                    }
+                });
+            }
+            
             // Profile tab switching
             profileTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -2902,8 +3262,13 @@
             const preferencesForm = document.getElementById('preferences-form');
             
             // Profile form submission
-            profileForm.addEventListener('submit', (e) => {
+            profileForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                if (!isAuthenticated) {
+                    requireAuth();
+                    return;
+                }
                 
                 // Get form data
                 const formData = new FormData(profileForm);
@@ -2913,16 +3278,42 @@
                     userData[key] = value;
                 });
                 
-                // This would send the data to the backend in a real app
-                console.log('Profile data to be sent to backend:', userData);
-                
-                // Show success message
-                showNotification('Profile updated successfully!');
+                try {
+                    // Send data to the backend via API
+                    const success = await updateUserProfile(userData);
+                    
+                    if (success) {
+                        // Update user data in local storage
+                        if (userData.firstName) {
+                            currentUser.firstName = userData.firstName;
+                            userAvatar.textContent = userData.firstName.charAt(0);
+                        }
+                        
+                        if (userData.lastName) {
+                            currentUser.lastName = userData.lastName;
+                        }
+                        
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        
+                        // Show success message
+                        showNotification('Profile updated successfully!');
+                    } else {
+                        showNotification('Failed to update profile. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Profile update error:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
             });
             
             // Preferences form submission
-            preferencesForm.addEventListener('submit', (e) => {
+            preferencesForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
+                if (!isAuthenticated) {
+                    requireAuth();
+                    return;
+                }
                 
                 // Get form data
                 const formData = new FormData(preferencesForm);
@@ -2937,11 +3328,20 @@
                     planning: formData.get('planning'),
                 };
                 
-                // This would send the data to the backend in a real app
-                console.log('Preferences data to be sent to backend:', preferencesData);
-                
-                // Show success message
-                showNotification('Preferences updated successfully!');
+                try {
+                    // Send data to the backend via API
+                    const response = await apiCall('updatePreferences', 'POST', preferencesData);
+                    
+                    if (response.success) {
+                        // Show success message
+                        showNotification('Preferences updated successfully!');
+                    } else {
+                        showNotification('Failed to update preferences. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Preferences update error:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                }
             });
             
             // Interest tags functionality
@@ -3041,12 +3441,26 @@
             });
             
             // Function to show a notification
-            function showNotification(message) {
+            function showNotification(message, type = 'success') {
                 const notification = document.createElement('div');
                 notification.className = 'notification';
+                
+                // Set icon and color based on type
+                let icon, background;
+                if (type === 'error') {
+                    icon = 'fa-exclamation-circle';
+                    background = 'var(--secondary)';
+                } else if (type === 'warning') {
+                    icon = 'fa-exclamation-triangle';
+                    background = '#f59e0b';
+                } else {
+                    icon = 'fa-check-circle';
+                    background = 'var(--primary)';
+                }
+                
                 notification.innerHTML = `
                     <div class="notification-content">
-                        <i class="fas fa-check-circle"></i>
+                        <i class="fas ${icon}"></i>
                         <span>${message}</span>
                     </div>
                 `;
@@ -3055,7 +3469,7 @@
                 notification.style.position = 'fixed';
                 notification.style.bottom = '20px';
                 notification.style.right = '20px';
-                notification.style.background = 'var(--primary)';
+                notification.style.background = background;
                 notification.style.color = 'white';
                 notification.style.padding = '1rem 1.5rem';
                 notification.style.borderRadius = '8px';
