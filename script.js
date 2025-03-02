@@ -4,36 +4,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.location.href = 'login.html';
         return;
     }
-    <style>
-  .traveler-avatar {
-    width: 32px;
-    height: 32px;
-    overflow: hidden;
-    border-radius: 50%;
-    background-color: #eee;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .traveler-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .avatar-initial {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    background-color: #0078ff;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-</style>
+    
     // Get current user data
     const currentUser = Session.getUser();
     
