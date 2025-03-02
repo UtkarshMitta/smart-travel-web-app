@@ -1,26 +1,44 @@
+/* Image to Location Recognition Feature
+   This module handles image uploads and uses Claude Vision to identify travel destinations
+*/
 document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize the feature if the user is logged in
     if (!Session.isLoggedIn()) {
         return;
     }
 
+    // Initialize the image recognition feature
     initImageRecognition();
 
+    /**
+     * Initialize the image recognition feature.
+     * It looks for the camera tool button, creates the modal, and binds the click event.
+     */
     function initImageRecognition() {
+        // Find the camera tool button in the UI
         const cameraButton = document.querySelector('.camera-tool');
         if (!cameraButton) return;
 
+        // Build the image recognition modal and add it to the document
         createImageRecognitionModal();
 
+        // When the camera button is clicked, show the recognition modal
         cameraButton.addEventListener('click', function() {
             showImageRecognitionModal();
         });
     }
 
+    /**
+     * Creates and appends the image recognition modal to the DOM.
+     * Also initializes file upload behavior & binds the various button events.
+     */
     function createImageRecognitionModal() {
+        // Create modal container and assign an id and class
         const modal = document.createElement('div');
         modal.id = 'image-recognition-modal';
         modal.className = 'image-recognition-modal';
         
+        // Modal content structure
         modal.innerHTML = `
             <div class="image-recognition-container">
                 <div class="image-recognition-header">
@@ -47,12 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="image-description-area">
                         <label for="image-description">Add context about the image (optional):</label>
-                        <textarea id="image-description" placeholder="Example: 'This is a photo I took during summer vacation', 'Can you  this historical landmark?', etc."></textarea>
+                        <textarea id="image-description" placeholder="Example: 'This is a photo I took during summer vacation', 'Can you identify this historical landmark?', etc."></textarea>
                     </div>
                     
                     <div class="image-recognition-actions">
                         <button class="analyze-image-btn" id="analyze-image-btn" disabled>
-                            <i class="fas fa-search-location"></i>  Location
+                            <i class="fas fa-search-location"></i> Identify Location
                         </button>
                     </div>
                 </div>
@@ -81,29 +99,40 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
+        // Append the modal to the body so it exists in the DOM
         document.body.appendChild(modal);
         
+        // Bind the close button event so that clicking it hides the modal.
         const closeButton = modal.querySelector('.image-recognition-close');
         closeButton.addEventListener('click', hideImageRecognitionModal);
         
+        // Also close the modal if user clicks outside the modal content.
         modal.addEventListener('click', function(e) {
             if (e.target === modal) {
                 hideImageRecognitionModal();
             }
         });
         
+        // Initialize file upload functionality (click, drag & drop, file change, removal)
         initFileUpload();
         
+        // Bind the analyze button event
         const analyzeButton = document.getElementById('analyze-image-btn');
         analyzeButton.addEventListener('click', analyzeImage);
         
+        // Bind the new analysis button event
         const newAnalysisButton = document.getElementById('new-analysis-btn');
         newAnalysisButton.addEventListener('click', resetImageRecognition);
         
+        // Bind the search location button event so that users can search for the identified location.
         const searchLocationButton = document.getElementById('search-location-btn');
         searchLocationButton.addEventListener('click', searchIdentifiedLocation);
     }
 
+    /**
+     * Initialize file upload functionality.
+     * Handles clicking, drag & drop, previewing the selected file, and removal.
+     */
     function initFileUpload() {
         const uploadArea = document.getElementById('image-upload-area');
         const uploadInput = document.getElementById('image-upload-input');
@@ -112,23 +141,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const removeButton = document.querySelector('.remove-image-btn');
         const analyzeButton = document.getElementById('analyze-image-btn');
         
+        // Clicking the upload area triggers the hidden file input
         uploadArea.addEventListener('click', function() {
             uploadInput.click();
         });
         
+        // When user selects a file
         uploadInput.addEventListener('change', function(e) {
             handleFileUpload(e.target.files[0]);
         });
         
+        // Enable drag-over styling
         uploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-        
         uploadArea.addEventListener('dragleave', function() {
             uploadArea.classList.remove('dragover');
         });
         
+        // Handle dropped file
         uploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
@@ -137,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Remove selected image and reset view when remove button is clicked
         removeButton.addEventListener('click', function() {
             uploadInput.value = '';
             previewArea.style.display = 'none';
@@ -145,7 +178,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /**
+     * Handle uploading and previewing a file.
+     * @param {File} file – The file uploaded by the user.
+     */
     function handleFileUpload(file) {
+        // Ensure a file was provided and that it is an image
         if (!file || !file.type.startsWith('image/')) {
             showNotification('Please upload an image file (JPEG, PNG, etc.)');
             return;
@@ -156,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const imagePreview = document.getElementById('uploaded-image-preview');
         const analyzeButton = document.getElementById('analyze-image-btn');
         
+        // Read the file and load a base64 data URL for preview
         const reader = new FileReader();
         reader.onload = function(e) {
             imagePreview.src = e.target.result;
@@ -166,33 +205,40 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.readAsDataURL(file);
     }
 
+    /**
+     * Initiate the image analysis using Claude Vision (via your API).
+     */
     function analyzeImage() {
         const imagePreview = document.getElementById('uploaded-image-preview');
         const description = document.getElementById('image-description').value;
         const resultsArea = document.getElementById('image-recognition-results');
         const loadingArea = document.getElementById('image-recognition-loading');
-        const uploadArea = document.getElementById('image-upload-area');
         const previewArea = document.getElementById('image-preview-area');
         const descriptionArea = document.querySelector('.image-description-area');
         const actionsArea = document.querySelector('.image-recognition-actions');
         
+        // Check that an image has been uploaded
         if (!imagePreview.src || imagePreview.src === '') {
             showNotification('Please upload an image to analyze');
             return;
         }
         
+        // Show a loading state while the image is being processed
         loadingArea.style.display = 'flex';
         previewArea.style.display = 'none';
         descriptionArea.style.display = 'none';
         actionsArea.style.display = 'none';
         
+        // Remove the data URL prefix to get the base64 image data
         const imageData = imagePreview.src.split(',')[1];
         
-        API.LocationFromImage(imageData, description)
+        // Call your API to perform image analysis (replace API.identifyLocationFromImage with your own API call)
+        API.identifyLocationFromImage(imageData, description)
             .then(response => {
                 loadingArea.style.display = 'none';
                 
                 if (response.success) {
+                    // If the analysis is successful, display the results
                     displayAnalysisResults(response.results, imagePreview.src);
                     resultsArea.style.display = 'block';
                 } else {
@@ -208,6 +254,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    /**
+     * Display the analysis results returned from the API.
+     * @param {Object} results – Analysis results object.
+     * @param {string} imageSrc – Source URL (base64) of the analyzed image.
+     */
     function displayAnalysisResults(results, imageSrc) {
         const resultsContent = document.getElementById('results-content');
         
@@ -230,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
+        // If the API provides alternative possibilities or travel tips, add them here.
         if (results.alternatives && results.alternatives.length > 0) {
             html += `
                 <div class="alternative-locations">
@@ -245,7 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
         }
-        
         if (results.travelTips && results.travelTips.length > 0) {
             html += `
                 <div class="travel-tips">
@@ -258,9 +309,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         resultsContent.innerHTML = html;
+        // Store the identified location into the search button for later use
         document.getElementById('search-location-btn').dataset.location = results.location || '';
     }
 
+    /**
+     * Returns a CSS class string based on the confidence level.
+     * @param {string} confidence – A string that should include keywords such as "High", "Medium", or "Low".
+     */
     function getConfidenceClass(confidence) {
         if (!confidence) return 'low';
         
@@ -274,6 +330,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Resets the UI back to the upload state.
+     */
     function resetToUploadState() {
         const uploadArea = document.getElementById('image-upload-area');
         const previewArea = document.getElementById('image-preview-area');
@@ -287,26 +346,31 @@ document.addEventListener('DOMContentLoaded', function() {
         actionsArea.style.display = 'flex';
         resultsArea.style.display = 'none';
         
+        // Clear any text in the description
         document.getElementById('image-description').value = '';
+        // Disable the analyze button until a new image is uploaded
         document.getElementById('analyze-image-btn').disabled = true;
     }
 
+    /**
+     * Resets the entire image recognition process.
+     */
     function resetImageRecognition() {
         const uploadInput = document.getElementById('image-upload-input');
         uploadInput.value = '';
         resetToUploadState();
     }
 
+    /**
+     * When the identified location is clicked on the results, use it to trigger a search.
+     */
     function searchIdentifiedLocation() {
         const locationName = document.getElementById('search-location-btn').dataset.location;
-        
         if (!locationName) {
             showNotification('No location identified to search');
             return;
         }
-        
         hideImageRecognitionModal();
-        
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.focus();
@@ -315,6 +379,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Shows the image recognition modal by adding the "active" class and preventing scrolling.
+     */
     function showImageRecognitionModal() {
         const modal = document.getElementById('image-recognition-modal');
         if (modal) {
@@ -323,6 +390,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Hides the image recognition modal and restores scrolling.
+     */
     function hideImageRecognitionModal() {
         const modal = document.getElementById('image-recognition-modal');
         if (modal) {
@@ -331,167 +401,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Displays a simple notification message on the screen.
+     * @param {string} message – The text of the notification.
+     */
     function showNotification(message) {
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.innerHTML = `<div class="notification-content">${message}</div>`;
         
-        document.body.appendChild(notification);
+        // Basic styling (you can adjust or move these to your CSS)
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.background = 'var(--primary)';
+        notification.style.color = 'white';
+        notification.style.padding = '1rem 1.5rem';
+        notification.style.borderRadius = '8px';
+        notification.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.3)';
+        notification.style.zIndex = '3000';
+        notification.style.display = 'flex';
+        notification.style.alignItems = 'center';
+        notification.style.gap = '0.5rem';
+        notification.style.transform = 'translateY(100px)';
+        notification.style.opacity = '0';
+        notification.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
         
+        document.body.appendChild(notification);
         setTimeout(() => {
-            notification.classList.add('show');
+            notification.style.transform = 'translateY(0)';
+            notification.style.opacity = '1';
         }, 10);
         
         setTimeout(() => {
-            notification.classList.remove('show');
+            notification.style.transform = 'translateY(100px)';
+            notification.style.opacity = '0';
             setTimeout(() => {
-                document.body.removeChild(notification);
+                notification.remove();
             }, 300);
         }, 3000);
     }
 });
-
-// API namespace for backend interactions
-const API = API || {};
-
-// Replace the current identifyLocationFromImage function with this:
-
-API.identifyLocationFromImage = function(imageData, description = '') {
-    return new Promise((resolve, reject) => {
-        const mediaType = 'image/jpeg'; // Default to JPEG, but could detect from the data URL
-        
-        const promptText = description 
-            ? `Identify this travel location: ${description}` 
-            : 'What travel destination or landmark is shown in this image? Please identify the location, region/country, and provide a brief description of what makes this place notable for travelers.';
-        
-        const requestData = {
-            model: "claude-3-7-sonnet-20250219",
-            max_tokens: 1024,
-            messages: [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "image",
-                            source: {
-                                type: "base64",
-                                media_type: mediaType,
-                                data: imageData
-                            }
-                        },
-                        {
-                            type: "text",
-                            text: promptText
-                        }
-                    ]
-                }
-            ]
-        };
-        
-        fetch('?action=callClaudeApi', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                reject(new Error(data.message || 'API request failed'));
-                return;
-            }
-            
-            // Parse Claude's response to extract structured information
-            const claudeResponse = data.data.content[0].text;
-            
-            try {
-                // Extract location information from Claude's response
-                const results = parseClaudeResponse(claudeResponse);
-                resolve({
-                    success: true,
-                    results: results
-                });
-            } catch (error) {
-                console.error('Error parsing Claude response:', error);
-                reject(new Error('Error processing the response'));
-            }
-        })
-        .catch(error => {
-            console.error('API error:', error);
-            reject(error);
-        });
-    });
-};
-
-// Helper function to parse Claude's response into structured data
-function parseClaudeResponse(responseText) {
-    // Initialize defaults
-    const result = {
-        location: 'Unknown Location',
-        region: '',
-        confidence: 'Low',
-        description: '',
-        alternatives: [],
-        travelTips: []
-    };
-    
-    // Extract the main location
-    const locationMatch = responseText.match(/(?:This is|I can identify this as|This looks like|This appears to be) (.*?)(?:,|\.|in)/i);
-    if (locationMatch && locationMatch[1]) {
-        result.location = locationMatch[1].trim();
-    }
-    
-    // Extract the region/country
-    const regionMatch = responseText.match(/(?:located in|found in|situated in|in) (.*?)(?:\.|\n|$)/i);
-    if (regionMatch && regionMatch[1]) {
-        result.region = regionMatch[1].trim();
-    }
-    
-    // Determine confidence level
-    if (responseText.match(/confident|certain|definitely|clearly|easily recognizable/i)) {
-        result.confidence = 'High';
-    } else if (responseText.match(/appears to be|looks like|probably|likely|seems to be/i)) {
-        result.confidence = 'Medium';
-    }
-    
-    // Extract description - take a large chunk of text after the identification
-    const descriptionMatch = responseText.match(/(?:This (?:is|appears to be|looks like).*?\.)(.{50,500})/s);
-    if (descriptionMatch && descriptionMatch[1]) {
-        result.description = descriptionMatch[1].trim();
-    } else {
-        // Fallback to take a portion after first paragraph
-        const paragraphs = responseText.split('\n\n');
-        if (paragraphs.length > 1) {
-            result.description = paragraphs[1].trim();
-        }
-    }
-    
-    // Look for alternative suggestions
-    if (responseText.match(/alternative|could also be|might be|possibly|another possibility/i)) {
-        const altMatches = responseText.match(/(?:alternative|could also be|might be|possibly|another possibility).*?((?:[A-Z][a-zA-Z\s]+)(?:,|\sin\s)(?:[A-Z][a-zA-Z\s]+))/gi);
-        if (altMatches) {
-            altMatches.forEach(match => {
-                const altLocationMatch = match.match(/((?:[A-Z][a-zA-Z\s]+)(?:,|\sin\s)(?:[A-Z][a-zA-Z\s]+))/i);
-                if (altLocationMatch && altLocationMatch[1]) {
-                    const parts = altLocationMatch[1].split(/,|\sin\s/i);
-                    if (parts.length >= 2) {
-                        result.alternatives.push({
-                            location: parts[0].trim(),
-                            region: parts[1].trim()
-                        });
-                    }
-                }
-            });
-        }
-    }
-    
-    // Extract travel tips
-    const tipsSection = responseText.match(/(?:travel tips|for travelers|visitors should|recommended to|best time|notable for tourists|travel advice).*?((?:\n- .*){1,})/is);
-    if (tipsSection && tipsSection[1]) {
-        const tips = tipsSection[1].split('\n- ').filter(tip => tip.trim().length > 0);
-        result.travelTips = tips.map(tip => tip.trim());
-    }
-    
-    return result;
-}
