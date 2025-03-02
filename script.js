@@ -391,10 +391,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     travelerCard.innerHTML = `
                         <div class="traveler-header">
                             <div class="traveler-header">
-        <div class="traveler-avatar">
+        <div class="traveler-header">
+        <div class="traveler-avatar" style="width: 40px !important; height: 40px !important; overflow: hidden;">
             ${traveler.avatar ? 
-              `<img src="${traveler.avatar}" alt="${traveler.name}'s avatar" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">` : 
-              `<div class="avatar-initial" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #e0e0e0; border-radius: 50%;">${traveler.avatarFallback}</div>`
+              `<img src="${traveler.avatar}" alt="${traveler.name}'s avatar" style="width: 40px !important; height: 40px !important; object-fit: cover !important; border-radius: 50% !important;">` : 
+              `<div class="avatar-initial" style="width: 40px !important; height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important; background-color: #e0e0e0 !important; border-radius: 50% !important; font-size: 16px !important;">${traveler.avatarFallback}</div>`
             }
         </div>
                             <div>
