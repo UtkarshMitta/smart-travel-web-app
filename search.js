@@ -166,11 +166,7 @@ document.addEventListener('DOMContentLoaded', async function() {
      */
     async function analyzeQueryWithClaude(query) {
         // Check if we have a valid API key
-        if (!"sk-"+CLAUDE_KE) {
-            console.warn('No Claude API key available, using fallback scoring');
-            return fallbackScoring(query);
-        }
-        
+
         try {
             // Prepare the request to Claude API
             const response = await fetch('https://api.anthropic.com/v1/messages', {
