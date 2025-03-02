@@ -1342,6 +1342,12 @@ function doGet(e) {
         result = callClaudeApi(requestData);
         break;
         
+      case 'identifyLocation':
+        // Extract the image data and description from the parameters
+        const identifyData = data || params;
+        result = identifyLocationFromImage(identifyData);
+        break;
+        
       case 'getApiKey':
         // This endpoint is deprecated as API key is now handled securely on the backend
         result = { success: false, message: 'This endpoint is deprecated. Use callClaudeApi instead.' };
@@ -1663,9 +1669,7 @@ function seedSampleData() {
 }
 
 function callClaudeApi(requestData) {
-
   try {
-
     // Get API key from the database
     const apiKey = getApiKey('CLAUDE_API_KEY');
     
@@ -1677,73 +1681,180 @@ function callClaudeApi(requestData) {
     }
 
     // Set default model if not provided
-
     if (!requestData.model) {
-
       requestData.model = "claude-3-7-sonnet-20250219";
-
     }
-
     
-
     // Set default max_tokens if not provided
-
     if (!requestData.max_tokens) {
-
       requestData.max_tokens = 1024;
-
     }
-
     
-
     // Make the request to Claude API
-
     const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
-
       method: 'post',
-
       contentType: 'application/json',
-
       headers: {
-
         'x-api-key': apiKey,
-
         'anthropic-version': '2023-06-01'
-
       },
-
       payload: JSON.stringify(requestData),
-
       muteHttpExceptions: true
-
     });
-
     
-
     // Return the response
-
     return {
-
       success: true,
-
       status: response.getResponseCode(),
-
       data: JSON.parse(response.getContentText())
-
     };
-
   } catch (error) {
-
     return {
-
       success: false,
-
       message: 'Error calling Claude API: ' + error.message
-
     };
-
   }
+}
 
+/**
+ * Identify a location from an image using Claude Vision
+ * @param {object} data - Object containing imageData and optional description
+ * @returns {object} - Response with location analysis
+ */
+function identifyLocationFromImage(data) {
+  try {
+    // Validate required fields
+    if (!data.imageData) {
+      return {
+        success: false,
+        message: 'Missing required image data'
+      };
+    }
+    
+    // Get the Claude API key
+    const apiKey = getApiKey('CLAUDE_API_KEY');
+    if (!apiKey) {
+      return {
+        success: false,
+        message: 'API key not found or invalid'
+      };
+    }
+    
+    // Format user description if provided
+    const userDescription = data.description ? 
+      `The user provided this description of the image: "${data.description}"` : 
+      "";
+    
+    // Prepare the request to Claude API with the image
+    const requestData = {
+      model: "claude-3-7-sonnet-20250219",
+      max_tokens: 1024,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: "image/jpeg",
+                data: data.imageData
+              }
+            },
+            {
+              type: "text",
+              text: `Please analyze this image and identify the location or travel destination shown.
+              
+              ${userDescription}
+              
+              Return your response as a structured JSON object with the following properties:
+              - location: The name of the location (city, landmark, etc.) and country
+              - confidence: Your confidence level (Low, Medium, High)
+              - region: The broader geographical region (e.g., Europe, Asia, etc.)
+              - description: A brief description of the location (2-3 sentences)
+              - alternatives: An array of 1-2 alternative possible locations if you're uncertain
+              - travelTips: An array of 2-3 travel tips for visiting this location
+              
+              Example format:
+              {
+                "location": "Bali, Indonesia",
+                "confidence": "High",
+                "region": "Asia",
+                "description": "Bali is an Indonesian island known for its lush landscapes, volcanic mountains, and beaches.",
+                "alternatives": [
+                  {"location": "Phuket", "region": "Thailand"},
+                  {"location": "Lombok", "region": "Indonesia"}
+                ],
+                "travelTips": [
+                  "Visit Ubud for cultural experiences",
+                  "Rent a scooter to explore the island"
+                ]
+              }
+              
+              If you can't identify a specific location, make your best guess based on architectural styles, landscapes, or other visual clues. Focus on travel destinations that would be of interest to tourists.`
+            }
+          ]
+        }
+      ]
+    };
+    
+    // Make the request to Claude API
+    const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      payload: JSON.stringify(requestData),
+      muteHttpExceptions: true
+    });
+    
+    if (response.getResponseCode() !== 200) {
+      return {
+        success: false,
+        message: `Claude API request failed with status ${response.getResponseCode()}`
+      };
+    }
+    
+    // Parse the response
+    const responseData = JSON.parse(response.getContentText());
+    
+    // Extract the JSON object from Claude's response
+    try {
+      const content = responseData.content[0].text;
+      
+      // Use regex to extract the JSON object from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const locationData = JSON.parse(jsonMatch[0]);
+        
+        return {
+          success: true,
+          results: locationData
+        };
+      } else {
+        // Return error if no JSON found
+        return {
+          success: false,
+          message: 'Could not parse Claude response'
+        };
+      }
+    } catch (parseError) {
+      console.error('Error parsing Claude response:', parseError);
+      return {
+        success: false,
+        message: 'Error parsing Claude response: ' + parseError.message
+      };
+    }
+    
+  } catch (error) {
+    console.error('Error in image recognition:', error);
+    return {
+      success: false,
+      message: 'Error in image recognition: ' + error.message
+    };
+  }
 }
 
 // Example usage

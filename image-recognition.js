@@ -227,26 +227,41 @@ document.addEventListener('DOMContentLoaded', function() {
         descriptionArea.style.display = 'none';
         actionsArea.style.display = 'none';
         
+        // Create a dynamic loading animation with status updates
+        updateAnalysisLoadingStatus('Preparing image for analysis...', 10);
+        
         // Get base64 image data (remove the data URL prefix)
         const imageData = imagePreview.src.split(',')[1];
+        
+        // Update loading progress
+        setTimeout(() => {
+            updateAnalysisLoadingStatus('Sending image to Claude Vision...', 30);
+        }, 500);
         
         // Call the API to identify the location
         API.identifyLocationFromImage(imageData, description)
             .then(response => {
-                // Hide loading
-                loadingArea.style.display = 'none';
+                // Update loading progress
+                setTimeout(() => {
+                    updateAnalysisLoadingStatus('Processing identification results...', 70);
+                }, 500);
                 
-                if (response.success) {
-                    // Display results
-                    displayAnalysisResults(response.results, imagePreview.src);
-                    // Show results area
-                    resultsArea.style.display = 'block';
-                } else {
-                    // Show error
-                    showNotification('Error analyzing image: ' + response.message);
-                    // Reset to upload state
-                    resetToUploadState();
-                }
+                setTimeout(() => {
+                    // Hide loading
+                    loadingArea.style.display = 'none';
+                    
+                    if (response.success) {
+                        // Display results
+                        displayAnalysisResults(response.results, imagePreview.src);
+                        // Show results area
+                        resultsArea.style.display = 'block';
+                    } else {
+                        // Show error
+                        showNotification('Error analyzing image: ' + response.message);
+                        // Reset to upload state
+                        resetToUploadState();
+                    }
+                }, 1000);
             })
             .catch(error => {
                 console.error('Error during image analysis:', error);
@@ -254,6 +269,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('Error analyzing image. Please try again.');
                 resetToUploadState();
             });
+    }
+    
+    /**
+     * Update the image analysis loading status
+     * @param {string} statusText - The status text to display
+     * @param {number} progress - The progress percentage (0-100)
+     */
+    function updateAnalysisLoadingStatus(statusText, progress) {
+        const loadingArea = document.getElementById('image-recognition-loading');
+        
+        // Clear previous content
+        loadingArea.innerHTML = '';
+        
+        // Create spinner
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+        
+        // Create status text with dynamic effect
+        const statusElement = document.createElement('div');
+        statusElement.className = 'loading-text';
+        statusElement.textContent = statusText;
+        
+        // Add progress indicator
+        const progressElement = document.createElement('div');
+        progressElement.className = 'loading-progress';
+        progressElement.innerHTML = `
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <div class="progress-text">${progress}%</div>
+        `;
+        
+        // Add elements to loading container
+        loadingArea.appendChild(spinner);
+        loadingArea.appendChild(statusElement);
+        loadingArea.appendChild(progressElement);
+    }
     }
 
     /**
