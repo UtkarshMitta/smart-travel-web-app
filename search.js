@@ -355,6 +355,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const jsonMatch = content.match(/\{[\s\S]*\}/);
                     if (jsonMatch) {
                         keywordScores = JSON.parse(jsonMatch[0]);
+                        
+                        // Log for debugging
+                        console.log("Keyword scores from Claude:", keywordScores);
+                        
+                        // Boost scores for destinations in the current query
+                        const queryLower = query.toLowerCase();
+                        Object.keys(keywordScores).forEach(key => {
+                            if (queryLower.includes(key.toLowerCase())) {
+                                keywordScores[key] = Math.min(10, keywordScores[key] + 2); // Boost but cap at 10
+                            }
+                        });
                     } else {
                         // Fallback to manually scoring based on query keywords
                         keywordScores = fallbackScoring(query);
@@ -576,7 +587,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Format matched keywords for display
                 const keywordText = destination.matchedKeywords
-                    .map(k => `<span class="search-result-match">${k.keyword}</span>`)
+                    .map(k => `<span class="search-result-match">${k.keyword}${k.score > 8 ? ' ⭐' : ''}</span>`)
                     .join(', ');
                 
                 // Create HTML for the result item with more destination details
@@ -694,7 +705,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Format matched keywords for display
         const keywordText = destination.matchedKeywords
-            .map(k => k.keyword)
+            .map(k => `${k.keyword}${k.score > 8 ? ' ⭐' : ''}`)
             .join(', ');
         
         card.innerHTML = `

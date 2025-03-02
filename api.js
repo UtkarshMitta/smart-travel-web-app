@@ -229,6 +229,15 @@ const API = {
     },
     
     /**
+     * Get featured destinations
+     * @param {number} limit - Maximum number of destinations to return
+     * @returns {Promise} - Promise that resolves with the API response
+     */
+    getFeaturedDestinations: function(limit = 3) {
+        return this.get('getFeaturedDestinations', { limit });
+    },
+    
+    /**
      * Search destinations
      * @param {string} query - Search query
      * @returns {Promise} - Promise that resolves with the API response

@@ -83,15 +83,42 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Add destinations to the trending list
             if (destinations.length > 0) {
                 destinations.forEach(dest => {
+                    // Format keywords if they exist
+                    let keywordsHTML = '';
+                    if (dest.Keywords) {
+                        try {
+                            const keywords = typeof dest.Keywords === 'string' ? 
+                                JSON.parse(dest.Keywords) : dest.Keywords;
+                            
+                            if (Array.isArray(keywords) && keywords.length > 0) {
+                                const topKeywords = keywords.slice(0, 2); // Show only top 2 keywords
+                                keywordsHTML = `
+                                    <div class="destination-keywords">
+                                        ${topKeywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
+                                    </div>
+                                `;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing keywords for destination:', dest.Name, e);
+                        }
+                    }
+                    
+                    // Create a shortened description
+                    const shortDesc = dest.Description ? 
+                        (dest.Description.length > 60 ? dest.Description.substring(0, 60) + '...' : dest.Description) : 
+                        dest.Region || '';
+                    
                     const item = document.createElement('div');
                     item.className = 'trending-item';
+                    item.dataset.id = dest.DestinationID;
                     item.innerHTML = `
                         <div class="trending-icon">
                             <i class="fas ${dest.Icon || 'fa-map-marker-alt'}"></i>
                         </div>
                         <div class="trending-info">
                             <h4>${dest.Name}</h4>
-                            <p>${dest.Description || dest.Region}</p>
+                            <p>${shortDesc}</p>
+                            ${keywordsHTML}
                             <div class="stat-badges">
                                 <div class="stat-badge">
                                     <i class="fas fa-user"></i> ${dest.TravellerCount || 'N/A'} travelers

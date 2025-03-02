@@ -572,6 +572,22 @@ h3 {
     color: var(--text-tertiary);
 }
 
+.destination-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.keyword-tag {
+    background: var(--primary-glow);
+    color: var(--primary);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
 .stat-badges {
     display: flex;
     flex-wrap: wrap;
