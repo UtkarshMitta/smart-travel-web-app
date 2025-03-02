@@ -171,19 +171,24 @@ document.addEventListener('DOMContentLoaded', async function() {
      * Clear search mode and reset the UI
      */
     function clearSearchMode() {
+        // Find map container and remove search-mode class
         const mapContainer = document.querySelector('.map-container');
-        const searchResultsContainer = document.querySelector('.search-results-container');
-        const trendingList = document.querySelector('.trending-list');
-        
         if (mapContainer) {
             mapContainer.classList.remove('search-mode');
         }
         
+        // Hide search results container
+        const searchResultsContainer = document.querySelector('.search-results-container');
         if (searchResultsContainer) {
-            searchResultsContainer.style.display = 'none';
+            searchResultsContainer.classList.remove('active');
+            // Hide after animation completes
+            setTimeout(() => {
+                searchResultsContainer.style.display = 'none';
+            }, 400);
         }
         
         // Restore trending list to center position
+        const trendingList = document.querySelector('.trending-list');
         if (trendingList) {
             trendingList.style.transform = 'translateX(0)';
         }
@@ -194,6 +199,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!e.target.closest('.search-bar')) {
             searchResults.style.display = 'none';
             searchLoading.style.display = 'none';
+            
+            // Also clear search mode when clicking outside
+            clearSearchMode();
         }
     });
     
@@ -814,8 +822,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Clear previous cards
         searchDestinationCards.innerHTML = '';
         
-        // Show the search results container
+        // Show the search results container with active class
         searchResultsContainer.style.display = 'block';
+        setTimeout(() => {
+            searchResultsContainer.classList.add('active');
+        }, 10);
         
         // No results case
         if (destinations.length === 0) {
@@ -929,6 +940,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         // First try clicking on the corresponding trending item
         const trendingItems = document.querySelectorAll('.trending-item');
         let clicked = false;
+        
+        // Always clear search mode regardless of selection
+        clearSearchMode();
         
         trendingItems.forEach(item => {
             const itemTitle = item.querySelector('h4')?.textContent;
