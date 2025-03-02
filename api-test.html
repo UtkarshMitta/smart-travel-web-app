@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .btn {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #3367d6;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Backend API Test</h1>
+        
+        <div>
+            <button class="btn" id="testSignup">Test Signup</button>
+            <button class="btn" id="testLogin">Test Login</button>
+            <button class="btn" id="testTesterLogin">Test Tester Login</button>
+            <button class="btn" id="testGetDestinations">Get Destinations</button>
+            <button class="btn" id="testGetTravelers">Get Travelers</button>
+            <button class="btn" id="testGetProfile">Get Profile</button>
+        </div>
+        
+        <h3>Response:</h3>
+        <pre id="response">Click a button to test API endpoints...</pre>
+    </div>
+    
+    <script>
+        // API URL
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxUdsoSMawsnWvS7DNy9IeGEssK5SU2zAUMhUkz_N2aTU4fk3Q7R_S6kJqs9bQAW5DnfQ/exec';
+        
+        // DOM elements
+        const responseElement = document.getElementById('response');
+        
+        // Helper function to make API calls
+        async function callApi(action, method = 'GET', data = null) {
+            responseElement.textContent = 'Loading...';
+            
+            try {
+                const url = `${API_URL}?action=${action}`;
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                // Add auth token if available
+                const userJson = localStorage.getItem('user');
+                if (userJson) {
+                    try {
+                        const user = JSON.parse(userJson);
+                        if (user && user.token) {
+                            options.headers['Authorization'] = `Bearer ${user.token}`;
+                        }
+                    } catch (error) {
+                        console.error('Error parsing user data:', error);
+                    }
+                }
+                
+                const response = await fetch(url, options);
+                const result = await response.json();
+                
+                // Format and display the result
+                responseElement.textContent = JSON.stringify(result, null, 2);
+                return result;
+            } catch (error) {
+                responseElement.textContent = `Error: ${error.message}`;
+                console.error('API Error:', error);
+            }
+        }
+        
+        // Event listeners for API test buttons
+        document.getElementById('testSignup').addEventListener('click', () => {
+            callApi('signup', 'POST', {
+                firstName: 'Test',
+                lastName: 'User',
+                email: 'test' + Date.now() + '@example.com',
+                password: 'password123'
+            });
+        });
+        
+        document.getElementById('testLogin').addEventListener('click', () => {
+            callApi('login', 'POST', {
+                email: 'test@example.com',
+                password: 'password123'
+            }).then(result => {
+                if (result.success && result.token) {
+                    localStorage.setItem('user', JSON.stringify({
+                        id: result.userId,
+                        firstName: result.firstName,
+                        lastName: result.lastName,
+                        email: 'test@example.com',
+                        token: result.token
+                    }));
+                }
+            });
+        });
+        
+        document.getElementById('testTesterLogin').addEventListener('click', () => {
+            callApi('testerLogin', 'POST');
+        });
+        
+        document.getElementById('testGetDestinations').addEventListener('click', () => {
+            callApi('getDestinations', 'GET');
+        });
+        
+        document.getElementById('testGetTravelers').addEventListener('click', () => {
+            callApi('getTravelers', 'POST', { destinationId: 'bali' });
+        });
+        
+        document.getElementById('testGetProfile').addEventListener('click', () => {
+            callApi('getUserProfile', 'GET');
+        });
+    </script>
+</body>
+</html>

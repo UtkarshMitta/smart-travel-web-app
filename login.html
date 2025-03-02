@@ -496,14 +496,22 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        // Store user session data
-                        localStorage.setItem('user', JSON.stringify({
-                            id: data.userId,
+                        // Extract user profile data
+                        const userData = {
+                            id: data.userId || data.id,
                             firstName: data.firstName,
                             lastName: data.lastName,
                             email: email,
                             token: data.token
-                        }));
+                        };
+                        
+                        // Add any additional fields that may be in the response
+                        if (data.profileImage) userData.profileImage = data.profileImage;
+                        if (data.role) userData.role = data.role;
+                        if (data.verified !== undefined) userData.verified = data.verified;
+                        
+                        // Store user session data
+                        localStorage.setItem('user', JSON.stringify(userData));
                         
                         // Show success message
                         loginSuccess.textContent = 'Login successful! Redirecting...';
@@ -549,15 +557,24 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        // Store tester user data
-                        localStorage.setItem('user', JSON.stringify({
-                            id: data.userId,
-                            firstName: 'Test',
-                            lastName: 'User',
-                            email: 'tester@cluster.travel',
+                        // Extract tester user data from response or use defaults
+                        const userData = {
+                            id: data.userId || data.id || 'tester-id',
+                            firstName: data.firstName || 'Test',
+                            lastName: data.lastName || 'User',
+                            email: data.email || 'tester@cluster.travel',
                             token: data.token,
                             isTester: true
-                        }));
+                        };
+                        
+                        // Add additional fields if they exist in the response
+                        if (data.profileImage) userData.profileImage = data.profileImage;
+                        if (data.role) userData.role = data.role || 'tester';
+                        if (data.verified !== undefined) userData.verified = data.verified;
+                        if (data.preferences) userData.preferences = data.preferences;
+                        
+                        // Store tester user data
+                        localStorage.setItem('user', JSON.stringify(userData));
                         
                         // Show success message
                         loginSuccess.textContent = 'Tester login successful! Redirecting...';

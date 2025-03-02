@@ -456,14 +456,21 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        // Store user session data
-                        localStorage.setItem('user', JSON.stringify({
-                            id: data.userId,
+                        // Create user object for local storage
+                        const userData = {
+                            id: data.userId || data.id,
                             firstName,
                             lastName,
                             email,
                             token: data.token
-                        }));
+                        };
+                        
+                        // Add any additional fields from the response
+                        if (data.verified !== undefined) userData.verified = data.verified;
+                        if (data.role) userData.role = data.role;
+                        
+                        // Store user session data
+                        localStorage.setItem('user', JSON.stringify(userData));
                         
                         // Show success message
                         signupSuccess.textContent = 'Account created successfully! Redirecting to your dashboard...';

@@ -2596,6 +2596,14 @@
                 return response.success;
             }
             
+            // Function to update user preferences
+            async function updateUserPreferences(preferencesData) {
+                if (!isAuthenticated) return false;
+                
+                const response = await apiCall('updatePreferences', 'POST', preferencesData);
+                return response.success;
+            }
+            
             // Function to send chat message
             async function sendChatMessage(channelId, messageText) {
                 if (!isAuthenticated) return false;
@@ -2625,6 +2633,43 @@
                 }
                 
                 const response = await apiCall('connectTraveler', 'POST', { travelerId });
+                return response.success;
+            }
+            
+            // Function to get connections list
+            async function getConnections() {
+                if (!isAuthenticated) return [];
+                
+                const response = await apiCall('getConnections');
+                if (response.success && response.connections) {
+                    return response.connections;
+                }
+                return [];
+            }
+            
+            // Function to get invites
+            async function getInvites() {
+                if (!isAuthenticated) return { received: [], sent: [] };
+                
+                const response = await apiCall('getInvites');
+                if (response.success) {
+                    return {
+                        received: response.receivedInvites || [],
+                        sent: response.sentInvites || []
+                    };
+                }
+                return { received: [], sent: [] };
+            }
+            
+            // Function to respond to an invite
+            async function respondToInvite(inviteId, accept) {
+                if (!isAuthenticated) return false;
+                
+                const response = await apiCall('respondToInvite', 'POST', {
+                    inviteId,
+                    accept
+                });
+                
                 return response.success;
             }
             
@@ -3238,14 +3283,323 @@
             
             // Profile tab switching
             profileTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
+                tab.addEventListener('click', async () => {
                     // Remove active class from all tabs
                     profileTabs.forEach(t => t.classList.remove('active'));
                     // Add active class to clicked tab
                     tab.classList.add('active');
                     
-                    // Show corresponding content
-                    const targetId = tab.getAttribute('data-profile-tab') + '-tab';
+                    const targetTabId = tab.getAttribute('data-profile-tab');
+                    const targetId = targetTabId + '-tab';
+                    
+                    // Load data for specific tabs
+                    if (targetTabId === 'connections') {
+                        // Load connections data
+                        const connectionsList = document.querySelector('.connections-list');
+                        if (connectionsList) {
+                            connectionsList.innerHTML = '<div style="text-align:center;padding:20px;"><i class="fas fa-spinner fa-spin"></i> Loading connections...</div>';
+                            
+                            try {
+                                const connections = await getConnections();
+                                
+                                if (connections && connections.length > 0) {
+                                    connectionsList.innerHTML = '';
+                                    
+                                    connections.forEach(connection => {
+                                        const connectionItem = document.createElement('div');
+                                        connectionItem.className = 'connection-item';
+                                        
+                                        const initial = connection.name ? connection.name.charAt(0) : 'U';
+                                        const location = connection.location || 'Unknown location';
+                                        const date = connection.date || 'No dates specified';
+                                        
+                                        connectionItem.innerHTML = `
+                                            <div class="connection-avatar">${initial}</div>
+                                            <div class="connection-info">
+                                                <h4>${connection.name}</h4>
+                                                <p>Connected since ${new Date(connection.connectedAt || Date.now()).toLocaleDateString()}</p>
+                                                <div class="connection-location">
+                                                    <i class="fas fa-map-marker-alt"></i> ${location} (${date})
+                                                </div>
+                                            </div>
+                                            <div class="connection-actions">
+                                                <button class="message-btn" data-user-id="${connection.userId}">
+                                                    <i class="fas fa-comment"></i>
+                                                </button>
+                                                <button class="more-options-btn">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                            </div>
+                                        `;
+                                        
+                                        connectionsList.appendChild(connectionItem);
+                                    });
+                                    
+                                    // Add message button handlers
+                                    document.querySelectorAll('.message-btn').forEach(btn => {
+                                        btn.addEventListener('click', function() {
+                                            const userId = this.getAttribute('data-user-id');
+                                            // Close profile and open chat with user
+                                            profileOverlay.classList.remove('active');
+                                            document.body.style.overflow = '';
+                                            
+                                            // Switch to community tab
+                                            const communityTab = document.querySelector('.tab[data-tab="community"]');
+                                            if (communityTab) communityTab.click();
+                                            
+                                            // Show notification for now - in a full implementation, 
+                                            // this would open the DM with the user
+                                            showNotification(`Opening chat with user ID: ${userId}`);
+                                        });
+                                    });
+                                    
+                                } else {
+                                    connectionsList.innerHTML = `
+                                        <div style="text-align:center;padding:20px;">
+                                            <i class="fas fa-user-friends" style="font-size:2rem;color:var(--text-tertiary);margin-bottom:1rem;"></i>
+                                            <p>You don't have any connections yet.</p>
+                                            <p style="color:var(--text-tertiary);margin-top:0.5rem;">Explore the Connect tab to find travelers.</p>
+                                        </div>
+                                    `;
+                                }
+                            } catch (error) {
+                                console.error('Error loading connections:', error);
+                                connectionsList.innerHTML = `
+                                    <div style="text-align:center;padding:20px;">
+                                        <i class="fas fa-exclamation-triangle" style="color:var(--secondary);"></i>
+                                        <p>Failed to load connections. Please try again.</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    } else if (targetTabId === 'invites') {
+                        // Load invites data
+                        const receivedList = document.querySelector('#invites-tab .invites-section:first-child .invites-list');
+                        const sentList = document.querySelector('#invites-tab .invites-section:last-child .invites-list');
+                        
+                        if (receivedList && sentList) {
+                            receivedList.innerHTML = '<div style="text-align:center;padding:10px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+                            sentList.innerHTML = '<div style="text-align:center;padding:10px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+                            
+                            try {
+                                const invites = await getInvites();
+                                
+                                // Process received invites
+                                if (invites.received && invites.received.length > 0) {
+                                    receivedList.innerHTML = '';
+                                    
+                                    invites.received.forEach(invite => {
+                                        const inviteItem = document.createElement('div');
+                                        inviteItem.className = 'invite-item';
+                                        inviteItem.setAttribute('data-invite-id', invite.id);
+                                        
+                                        const initial = invite.senderName ? invite.senderName.charAt(0) : 'U';
+                                        
+                                        inviteItem.innerHTML = `
+                                            <div class="invite-avatar">${initial}</div>
+                                            <div class="invite-info">
+                                                <h4>${invite.senderName} invited you to join their trip</h4>
+                                                <div class="invite-details">
+                                                    <span><i class="fas fa-map-marker-alt"></i> ${invite.location || 'Unknown location'}</span>
+                                                    <span><i class="fas fa-calendar-alt"></i> ${invite.dates || 'Dates not specified'}</span>
+                                                </div>
+                                                <p class="invite-message">"${invite.message || 'No message provided'}"</p>
+                                            </div>
+                                            <div class="invite-actions">
+                                                <button class="accept-btn" data-invite-id="${invite.id}">Accept</button>
+                                                <button class="decline-btn" data-invite-id="${invite.id}">Decline</button>
+                                            </div>
+                                        `;
+                                        
+                                        receivedList.appendChild(inviteItem);
+                                    });
+                                    
+                                    // Add button handlers
+                                    receivedList.querySelectorAll('.accept-btn').forEach(btn => {
+                                        btn.addEventListener('click', async function() {
+                                            const inviteId = this.getAttribute('data-invite-id');
+                                            const inviteItem = this.closest('.invite-item');
+                                            
+                                            // Update UI state
+                                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                                            this.disabled = true;
+                                            
+                                            try {
+                                                const success = await respondToInvite(inviteId, true);
+                                                
+                                                if (success) {
+                                                    inviteItem.style.opacity = '0.5';
+                                                    setTimeout(() => {
+                                                        inviteItem.innerHTML = `
+                                                            <div class="invite-avatar">${inviteItem.querySelector('.invite-avatar').textContent}</div>
+                                                            <div class="invite-info">
+                                                                <h4>${inviteItem.querySelector('h4').textContent}</h4>
+                                                                <div class="invite-details">
+                                                                    ${inviteItem.querySelector('.invite-details').innerHTML}
+                                                                </div>
+                                                                <div class="invite-status accepted">
+                                                                    <i class="fas fa-check-circle"></i> You have accepted this invite
+                                                                </div>
+                                                            </div>
+                                                            <div class="invite-actions">
+                                                                <button class="message-btn" style="width: auto; padding: 0.6rem 1rem;">
+                                                                    <i class="fas fa-comment"></i> Message
+                                                                </button>
+                                                            </div>
+                                                        `;
+                                                        inviteItem.style.opacity = '1';
+                                                    }, 300);
+                                                    
+                                                    showNotification('Invite accepted successfully!');
+                                                } else {
+                                                    this.innerHTML = 'Accept';
+                                                    this.disabled = false;
+                                                    showNotification('Failed to accept invite. Please try again.', 'error');
+                                                }
+                                            } catch (error) {
+                                                console.error('Error accepting invite:', error);
+                                                this.innerHTML = 'Accept';
+                                                this.disabled = false;
+                                                showNotification('An error occurred. Please try again.', 'error');
+                                            }
+                                        });
+                                    });
+                                    
+                                    receivedList.querySelectorAll('.decline-btn').forEach(btn => {
+                                        btn.addEventListener('click', async function() {
+                                            const inviteId = this.getAttribute('data-invite-id');
+                                            const inviteItem = this.closest('.invite-item');
+                                            
+                                            // Update UI state
+                                            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                                            this.disabled = true;
+                                            
+                                            try {
+                                                const success = await respondToInvite(inviteId, false);
+                                                
+                                                if (success) {
+                                                    inviteItem.style.opacity = '0.5';
+                                                    setTimeout(() => {
+                                                        inviteItem.style.height = '0';
+                                                        inviteItem.style.padding = '0';
+                                                        inviteItem.style.margin = '0';
+                                                        inviteItem.style.overflow = 'hidden';
+                                                        setTimeout(() => {
+                                                            inviteItem.remove();
+                                                        }, 300);
+                                                    }, 300);
+                                                    
+                                                    showNotification('Invite declined successfully!');
+                                                } else {
+                                                    this.innerHTML = 'Decline';
+                                                    this.disabled = false;
+                                                    showNotification('Failed to decline invite. Please try again.', 'error');
+                                                }
+                                            } catch (error) {
+                                                console.error('Error declining invite:', error);
+                                                this.innerHTML = 'Decline';
+                                                this.disabled = false;
+                                                showNotification('An error occurred. Please try again.', 'error');
+                                            }
+                                        });
+                                    });
+                                    
+                                } else {
+                                    receivedList.innerHTML = `
+                                        <div style="text-align:center;padding:10px;">
+                                            <p>You don't have any received invites.</p>
+                                        </div>
+                                    `;
+                                }
+                                
+                                // Process sent invites
+                                if (invites.sent && invites.sent.length > 0) {
+                                    sentList.innerHTML = '';
+                                    
+                                    invites.sent.forEach(invite => {
+                                        const inviteItem = document.createElement('div');
+                                        inviteItem.className = 'invite-item';
+                                        inviteItem.setAttribute('data-invite-id', invite.id);
+                                        
+                                        const initial = invite.receiverName ? invite.receiverName.charAt(0) : 'U';
+                                        
+                                        inviteItem.innerHTML = `
+                                            <div class="invite-avatar">${initial}</div>
+                                            <div class="invite-info">
+                                                <h4>You invited ${invite.receiverName} to join your trip</h4>
+                                                <div class="invite-details">
+                                                    <span><i class="fas fa-map-marker-alt"></i> ${invite.location || 'Unknown location'}</span>
+                                                    <span><i class="fas fa-calendar-alt"></i> ${invite.dates || 'Dates not specified'}</span>
+                                                </div>
+                                                <p class="invite-message">"${invite.message || 'No message provided'}"</p>
+                                                <div class="invite-status ${invite.status === 'accepted' ? 'accepted' : 'pending'}">
+                                                    <i class="fas ${invite.status === 'accepted' ? 'fa-check-circle' : 'fa-clock'}"></i> 
+                                                    ${invite.status === 'accepted' ? 'Accepted' : 'Pending response'}
+                                                </div>
+                                            </div>
+                                            <div class="invite-actions">
+                                                ${invite.status === 'accepted' ? 
+                                                    `<button class="message-btn" style="width: auto; padding: 0.6rem 1rem;">
+                                                        <i class="fas fa-comment"></i> Message
+                                                    </button>` : 
+                                                    `<button class="cancel-btn" data-invite-id="${invite.id}">Cancel</button>`
+                                                }
+                                            </div>
+                                        `;
+                                        
+                                        sentList.appendChild(inviteItem);
+                                    });
+                                    
+                                    // Add button handlers for cancel buttons
+                                    sentList.querySelectorAll('.cancel-btn').forEach(btn => {
+                                        btn.addEventListener('click', async function() {
+                                            const inviteId = this.getAttribute('data-invite-id');
+                                            const inviteItem = this.closest('.invite-item');
+                                            
+                                            // For now, just animate the removal - in a complete implementation
+                                            // this would call an API endpoint to cancel the invite
+                                            inviteItem.style.opacity = '0.5';
+                                            setTimeout(() => {
+                                                inviteItem.style.height = '0';
+                                                inviteItem.style.padding = '0';
+                                                inviteItem.style.margin = '0';
+                                                inviteItem.style.overflow = 'hidden';
+                                                setTimeout(() => {
+                                                    inviteItem.remove();
+                                                }, 300);
+                                            }, 300);
+                                            
+                                            showNotification('Invite cancelled successfully!');
+                                        });
+                                    });
+                                    
+                                } else {
+                                    sentList.innerHTML = `
+                                        <div style="text-align:center;padding:10px;">
+                                            <p>You haven't sent any invites.</p>
+                                        </div>
+                                    `;
+                                }
+                                
+                            } catch (error) {
+                                console.error('Error loading invites:', error);
+                                receivedList.innerHTML = `
+                                    <div style="text-align:center;padding:10px;">
+                                        <i class="fas fa-exclamation-triangle" style="color:var(--secondary);"></i>
+                                        <p>Failed to load received invites. Please try again.</p>
+                                    </div>
+                                `;
+                                sentList.innerHTML = `
+                                    <div style="text-align:center;padding:10px;">
+                                        <i class="fas fa-exclamation-triangle" style="color:var(--secondary);"></i>
+                                        <p>Failed to load sent invites. Please try again.</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                    
+                    // Show corresponding content section
                     profileContentSections.forEach(section => {
                         section.classList.remove('active');
                         if (section.id === targetId) {
@@ -3329,10 +3683,10 @@
                 };
                 
                 try {
-                    // Send data to the backend via API
-                    const response = await apiCall('updatePreferences', 'POST', preferencesData);
+                    // Send data to the backend via API using the dedicated function
+                    const success = await updateUserPreferences(preferencesData);
                     
-                    if (response.success) {
+                    if (success) {
                         // Show success message
                         showNotification('Preferences updated successfully!');
                     } else {
