@@ -261,35 +261,51 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     /**
-     * Update the loading status with text and progress bar
-     * @param {string} statusText - The status text to display
-     * @param {number} progress - The progress percentage (0-100)
-     */
-    function updateLoadingStatus(statusText, progress) {
-        // Create terminal-style loading text
-        const loadingText = document.createElement('div');
-        loadingText.className = 'search-loading-text';
-        loadingText.textContent = '> ' + statusText;
-        
-        // Create progress bar
-        const progressBar = document.createElement('div');
-        progressBar.className = 'search-loading-progress';
-        
-        // Create status text
-        const statusElement = document.createElement('div');
-        statusElement.className = 'search-loading-status';
-        statusElement.textContent = `Processing | ${progress}% complete`;
-        
-        // Add elements to loading container
-        searchLoading.appendChild(loadingText);
-        searchLoading.appendChild(progressBar);
-        searchLoading.appendChild(statusElement);
-        
-        // Animate progress bar
-        setTimeout(() => {
-            progressBar.style.width = `${progress}%`;
-        }, 100);
-    }
+ * Update the loading status with text and progress bar
+ * @param {string} statusText - The status text to display
+ * @param {number} progress - The progress percentage (0-100)
+ */
+function updateLoadingStatus(statusText, progress) {
+    // Create terminal-style loading text with typing effect
+    const loadingText = document.createElement('div');
+    loadingText.className = 'search-loading-text';
+    loadingText.innerHTML = `<span class="loading-command"></span>`;
+    
+    // Create progress bar
+    const progressBar = document.createElement('div');
+    progressBar.className = 'search-loading-progress';
+    
+    // Create status text
+    const statusElement = document.createElement('div');
+    statusElement.className = 'search-loading-status';
+    statusElement.innerHTML = `<span class="status-label">CLUSTER_SEARCH</span> <span class="status-progress">${progress}% complete</span>`;
+    
+    // Add elements to loading container
+    searchLoading.appendChild(loadingText);
+    searchLoading.appendChild(progressBar);
+    searchLoading.appendChild(statusElement);
+    
+    // Type the text character by character for a more dynamic effect
+    const textNode = loadingText.querySelector('.loading-command');
+    const text = statusText;
+    let i = 0;
+    const typeInterval = setInterval(() => {
+        if (i < text.length) {
+            textNode.textContent += text.charAt(i);
+            i++;
+        } else {
+            clearInterval(typeInterval);
+        }
+    }, 20);
+    
+    // Animate progress bar with a slight delay for better visual effect
+    setTimeout(() => {
+        progressBar.style.width = `${progress}%`;
+    }, 300);
+    
+    // Add pulse animation to the status element
+    statusElement.style.animation = 'pulse 1.5s infinite';
+}
     
     /**
      * Call Claude API to analyze the search query (via backend proxy)
