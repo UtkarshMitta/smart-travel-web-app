@@ -2480,7 +2480,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // API constants
+            // Google Apps Script URL
             const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby0XxOtJ6I8rwN0IRTilxdF3O3ucIShAdXym5z_ta_CPSCaRp0sYUAGVTSm5NSlHDt2Sw/exec';
             
             // Authentication check
@@ -2531,186 +2531,34 @@
                 }
             });
             
-            // Fallback to local storage if API is unavailable
-            const useLocalStorageFallback = true; // Set to false when API is working
-            
-            // Function to make authenticated API calls
+            // Function to make authenticated API calls using JSONP
             async function apiCall(action, method = 'GET', data = null) {
-                if (useLocalStorageFallback) {
-                    // Local storage fallback implementation
-                    console.log(`Using local storage fallback for API call: ${action}`);
+                try {
+                    // Create a unique callback name for this request
+                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
                     
-                    // Simulate basic API responses for demo purposes
-                    let response = { success: true };
-                    
-                    switch (action) {
-                        case 'getDestinations':
-                            response.destinations = [
-                                { id: 'bali', name: 'Bali, Indonesia', travelerCount: 42, popularDates: 'Apr - Jun 2025', isSolo: true },
-                                { id: 'japan', name: 'Tokyo, Japan', travelerCount: 38, popularDates: 'Mar - May 2025', isSolo: true },
-                                { id: 'lisbon', name: 'Lisbon, Portugal', travelerCount: 31, popularDates: 'Jun - Aug 2025', isSolo: true },
-                                { id: 'barcelona', name: 'Barcelona, Spain', travelerCount: 27, popularDates: 'May - Jul 2025', isSolo: true },
-                                { id: 'nyc', name: 'New York City, USA', travelerCount: 25, popularDates: 'Apr - Jun 2025', isSolo: true }
-                            ];
-                            break;
-                            
-                        case 'getTravelers':
-                            response.travelers = [
-                                { 
-                                    id: 'traveler1', 
-                                    name: 'Alex Johnson', 
-                                    avatar: 'A',
-                                    status: 'Solo traveler',
-                                    verified: true,
-                                    dates: 'May 10 - 20, 2025',
-                                    interests: ['Photography', 'Hiking', 'Food']
-                                },
-                                { 
-                                    id: 'traveler2', 
-                                    name: 'Sarah Chen', 
-                                    avatar: 'S',
-                                    status: 'Solo traveler',
-                                    verified: true,
-                                    dates: 'May 15 - 25, 2025',
-                                    interests: ['Culture', 'Museums', 'Markets']
-                                },
-                                { 
-                                    id: 'traveler3', 
-                                    name: 'Michael Park', 
-                                    avatar: 'M',
-                                    status: 'Solo traveler',
-                                    verified: false,
-                                    dates: 'Jun 5 - 15, 2025',
-                                    interests: ['Surfing', 'Beaches', 'Nightlife']
-                                }
-                            ];
-                            break;
-                            
-                        case 'getUserProfile':
-                            // Return data based on current user
-                            if (currentUser) {
-                                response.profile = {
-                                    firstName: currentUser.firstName || 'Demo',
-                                    lastName: currentUser.lastName || 'User',
-                                    email: currentUser.email || 'demo@example.com',
-                                    phone: '+1 (555) 123-4567',
-                                    bio: 'Passionate traveler with a love for photography and authentic cultural experiences.',
-                                    location: 'San Francisco, CA'
-                                };
-                            } else {
-                                response.success = false;
-                                response.message = 'User not found';
-                            }
-                            break;
-                            
-                        case 'getConnections':
-                            response.connections = [
-                                {
-                                    id: 'connection1',
-                                    userId: 'user1',
-                                    name: 'Mark Johnson',
-                                    connectedAt: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3 days ago
-                                    location: 'Tokyo, Japan',
-                                    date: 'Apr 15 - 25, 2025'
-                                },
-                                {
-                                    id: 'connection2',
-                                    userId: 'user2',
-                                    name: 'Sarah Winters',
-                                    connectedAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago
-                                    location: 'Barcelona, Spain',
-                                    date: 'Jul 10 - 20, 2025'
-                                },
-                                {
-                                    id: 'connection3',
-                                    userId: 'user3',
-                                    name: 'Alex Turner',
-                                    connectedAt: Date.now() - 10 * 24 * 60 * 60 * 1000, // 10 days ago
-                                    location: 'Bali, Indonesia',
-                                    date: 'May 5 - 15, 2025'
-                                }
-                            ];
-                            break;
-                            
-                        case 'getInvites':
-                            response.receivedInvites = [
-                                {
-                                    id: 'invite1',
-                                    senderName: 'Jamie Lee',
-                                    location: 'Costa Rica',
-                                    dates: 'Jan 10 - 20, 2026',
-                                    message: 'Looking for a hiking buddy for an adventure in Costa Rica. We\'ll explore volcanoes and rainforests!'
-                                },
-                                {
-                                    id: 'invite2',
-                                    senderName: 'Ryan Park',
-                                    location: 'Tokyo, Japan',
-                                    dates: 'Apr 15 - 25, 2025',
-                                    message: 'I noticed we\'ll be in Tokyo at the same time. Would you like to explore some photography spots together?'
-                                }
-                            ];
-                            
-                            response.sentInvites = [
-                                {
-                                    id: 'sent1',
-                                    receiverName: 'Liam Chen',
-                                    location: 'Lisbon, Portugal',
-                                    dates: 'Jun 5 - 15, 2025',
-                                    message: 'Hey! I saw we both love photography and will be in Lisbon around the same time. Want to explore the city together?',
-                                    status: 'pending'
-                                },
-                                {
-                                    id: 'sent2',
-                                    receiverName: 'Maya Wong',
-                                    location: 'Barcelona, Spain',
-                                    dates: 'Jul 10 - 20, 2025',
-                                    message: 'Looking for someone to check out the architecture and food scene in Barcelona. Saw we have similar interests!',
-                                    status: 'accepted'
-                                }
-                            ];
-                            break;
-                            
-                        case 'logout':
-                            // No special handling needed for logout in local storage fallback
-                            break;
-                            
-                        case 'updateProfile':
-                        case 'updatePreferences':
-                            // Just return success
-                            break;
-                            
-                        case 'sendMessage':
-                        case 'getChannelMessages':
-                            // For sendMessage, no special handling needed
-                            // For getChannelMessages, we'll use hard-coded data in the UI
-                            break;
-                            
-                        case 'connectTraveler':
-                            // Just return success
-                            break;
-                            
-                        case 'respondToInvite':
-                            // Just return success
-                            break;
-                            
-                        default:
-                            response = { success: false, message: 'Unsupported API action: ' + action };
-                    }
-                    
-                    // Simulate network delay
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    return response;
-                    
-                } else {
-                    // Real API call with fetch
-                    try {
-                        let url = `${API_BASE_URL}?action=${action}`;
-                        let options = {
-                            method: method,
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
+                    // Create a promise to handle the JSONP response
+                    const jsonpPromise = new Promise((resolve, reject) => {
+                        // Create a global callback function
+                        window[jsonpCallback] = function(responseData) {
+                            // Clean up
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            resolve(responseData);
                         };
+                        
+                        // Create a script element to make the request
+                        const script = document.createElement('script');
+                        
+                        // Handle errors
+                        script.onerror = function() {
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            reject(new Error('API request failed. Server unreachable.'));
+                        };
+                        
+                        // Set up the base URL with the action and callback
+                        let url = `${API_BASE_URL}?action=${action}&callback=${jsonpCallback}`;
                         
                         // Add data if provided
                         if (data) {
@@ -2719,25 +2567,29 @@
                                 data.token = currentUser.token;
                             }
                             
-                            if (method === 'GET') {
-                                // For GET requests, add data to URL
-                                url += `&data=${encodeURIComponent(JSON.stringify(data))}`;
-                            } else {
-                                // For POST requests, add data to body
-                                options.body = JSON.stringify(data);
-                            }
+                            // Encode the data and add it to the URL
+                            const dataEncoded = encodeURIComponent(JSON.stringify(data));
+                            url += `&data=${dataEncoded}`;
                         } else if (currentUser && currentUser.token) {
-                            // If no data but we have a token, add it to headers
-                            options.headers['Authorization'] = `Bearer ${currentUser.token}`;
+                            // If no data but we have a token, add it separately
+                            url += `&token=${encodeURIComponent(currentUser.token)}`;
                         }
                         
-                        const response = await fetch(url, options);
-                        const responseData = await response.json();
-                        return responseData;
-                    } catch (error) {
-                        console.error(`API error (${action}):`, error);
-                        return { success: false, message: 'Network error. Please try again.' };
-                    }
+                        // Set the script source to the constructed URL
+                        script.src = url;
+                        
+                        // Add the script to the page to execute the request
+                        document.body.appendChild(script);
+                    });
+                    
+                    // Wait for and return the JSONP response
+                    return await jsonpPromise;
+                } catch (error) {
+                    console.error(`API error (${action}):`, error);
+                    return { 
+                        success: false, 
+                        message: 'Network error. Could not connect to server. Please try again.'
+                    };
                 }
             }
             
