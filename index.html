@@ -843,5 +843,120 @@
         -moz-osx-font-smoothing: grayscale;
     }
 </style>
+    <!-- Add this to the existing <style> tag at the bottom of index.html -->
+<style>
+    /* Critical fixes for search UI */
+    #discover.search-active .trending-list {
+        transform: translateX(30%) translateY(20px);
+        max-width: 500px;
+        opacity: 0.9;
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    
+    .search-results-container {
+        z-index: 30;
+    }
+    
+    .search-active .discover-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+    
+    /* Ensure dropdown search results also display properly */
+    .search-results {
+        z-index: 100;
+    }
+    
+    /* Improve search transition */
+    .search-bar:focus-within {
+        transform: scale(1.02);
+        z-index: 2000;
+    }
+    
+    /* Improved text rendering */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Image Recognition Modal CSS */
+    .image-recognition-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .image-recognition-modal.active {
+        display: flex;
+    }
+    
+    .image-recognition-container {
+        background-color: white;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .image-recognition-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .image-recognition-body {
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .image-upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: border-color 0.3s ease;
+    }
+    
+    .image-upload-area:hover, .image-upload-area.dragover {
+        border-color: #0078ff;
+    }
+    
+    .image-recognition-results, .image-recognition-loading {
+        padding: 20px;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(0, 120, 255, 0.2);
+        border-radius: 50%;
+        border-top-color: #0078ff;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 </body>
 </html>s
