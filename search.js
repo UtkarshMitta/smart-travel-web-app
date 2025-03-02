@@ -43,37 +43,37 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
                 
                 // If no keywords were found or parsing failed, add some default ones based on name and region
-                if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
-                    keywords = [];
+                // if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+                //     keywords = [];
                     
-                    // Add destination name parts as keywords
-                    if (dest.Name) {
-                        const nameParts = dest.Name.split(/[,\s]+/);
-                        nameParts.forEach(part => {
-                            if (part.length > 2) {
-                                const keyword = part.trim().toLowerCase();
-                                keywords.push(keyword);
-                                uniqueKeywordsSet.add(keyword);
-                            }
-                        });
-                    }
+                //     // Add destination name parts as keywords
+                //     if (dest.Name) {
+                //         const nameParts = dest.Name.split(/[,\s]+/);
+                //         nameParts.forEach(part => {
+                //             if (part.length > 2) {
+                //                 const keyword = part.trim().toLowerCase();
+                //                 keywords.push(keyword);
+                //                 uniqueKeywordsSet.add(keyword);
+                //             }
+                //         });
+                //     }
                     
-                    // Add country as keyword if available
-                    if (dest.Country) {
-                        const keyword = dest.Country.toLowerCase();
-                        keywords.push(keyword);
-                        uniqueKeywordsSet.add(keyword);
-                    }
+                //     // Add country as keyword if available
+                //     if (dest.Country) {
+                //         const keyword = dest.Country.toLowerCase();
+                //         keywords.push(keyword);
+                //         uniqueKeywordsSet.add(keyword);
+                //     }
                     
-                    // Add region as keyword if available
-                    if (dest.Region) {
-                        const keyword = dest.Region.toLowerCase();
-                        keywords.push(keyword);
-                        uniqueKeywordsSet.add(keyword);
-                    }
+                //     // Add region as keyword if available
+                //     if (dest.Region) {
+                //         const keyword = dest.Region.toLowerCase();
+                //         keywords.push(keyword);
+                //         uniqueKeywordsSet.add(keyword);
+                //     }
                     
-                    console.log('Generated fallback keywords for destination:', dest.Name, keywords);
-                }
+                //     console.log('Generated fallback keywords for destination:', dest.Name, keywords);
+                // }
                 
                 return {
                     id: dest.DestinationID,

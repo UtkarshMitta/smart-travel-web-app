@@ -928,6 +928,97 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize search loading container
   initSearchAnimation();
   
+  // Initialize trending destinations
+  populateTrendingDestinations();
+  
   // Override the original search function
   window.performSmartSearch = performEnhancedSearch;
 });
+
+/**
+ * Populate trending destinations in the UI
+ */
+function populateTrendingDestinations() {
+  const trendingList = document.querySelector('.trending-list');
+  if (!trendingList) return;
+  
+  // Sample destinations data (in a real app, this would come from the API)
+  const trendingDestinations = [
+    {
+      id: 'bali-indonesia',
+      name: 'Bali, Indonesia',
+      description: 'Tropical paradise with beaches, rice terraces and spiritual retreats',
+      icon: 'fa-umbrella-beach',
+      travelerCount: 248,
+      trendingPercentage: 15
+    },
+    {
+      id: 'patagonia-chile',
+      name: 'Patagonia, Chile',
+      description: 'Epic landscapes and outdoor adventures in southern South America',
+      icon: 'fa-mountain',
+      travelerCount: 186,
+      trendingPercentage: 22
+    },
+    {
+      id: 'kyoto-japan',
+      name: 'Kyoto, Japan',
+      description: 'Ancient temples, traditional gardens and cultural heritage',
+      icon: 'fa-landmark',
+      travelerCount: 205,
+      trendingPercentage: 12
+    },
+    {
+      id: 'santorini-greece',
+      name: 'Santorini, Greece',
+      description: 'Iconic white and blue buildings with stunning Aegean views',
+      icon: 'fa-water',
+      travelerCount: 274,
+      trendingPercentage: 20
+    },
+    {
+      id: 'lisbon-portugal',
+      name: 'Lisbon, Portugal',
+      description: 'Europe\'s sunniest capital with historic charm and coastal beauty',
+      icon: 'fa-city',
+      travelerCount: 312,
+      trendingPercentage: 18
+    }
+  ];
+  
+  // Clear any existing content
+  trendingList.innerHTML = '<h3>Trending Destinations</h3>';
+  
+  // Create and append destination items
+  trendingDestinations.forEach(destination => {
+    const trendingItem = document.createElement('div');
+    trendingItem.className = 'trending-item';
+    trendingItem.dataset.id = destination.id;
+    
+    trendingItem.innerHTML = `
+      <div class="trending-icon">
+        <i class="fas ${destination.icon}"></i>
+      </div>
+      <div class="trending-info">
+        <h4>${destination.name}</h4>
+        <p>${destination.description}</p>
+        <div class="stat-badges">
+          <div class="stat-badge">
+            <i class="fas fa-user"></i> ${destination.travelerCount} travelers
+          </div>
+          <div class="stat-badge">
+            <i class="fas fa-arrow-trend-up"></i> +${destination.trendingPercentage}%
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add click event
+    trendingItem.addEventListener('click', () => {
+      console.log(`Selected trending destination: ${destination.name}`);
+      alert(`You selected ${destination.name}. In a real app, this would take you to the destination details.`);
+    });
+    
+    trendingList.appendChild(trendingItem);
+  });
+}
