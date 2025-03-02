@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     
                     travelerCard.innerHTML = `
                         <div class="traveler-header">
-                            <div class="traveler-avatar">${traveler.avatar}</div>
+                            <div class="traveler-avatar"><img src="${traveler.avatar}" alt="${traveler.name}'s avatar"></div>
                             <div>
                                 <div class="traveler-name">${traveler.name}</div>
                                 <div class="traveler-status">${traveler.status} · ${traveler.verified ? 'Verified' : 'Basic'}</div>
