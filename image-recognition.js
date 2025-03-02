@@ -27,6 +27,32 @@ function initImageRecognition() {
     cameraButton.addEventListener('click', function() {
         showImageRecognitionModal();
     });
+    
+    // Add a file input directly to the page for testing
+    const imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.id = 'floating-image-input';
+    imageInput.style.display = 'none';
+    imageInput.accept = 'image/*';
+    document.body.appendChild(imageInput);
+    
+    // Update camera button to trigger file input
+    cameraButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        imageInput.click(); // Open file dialog
+    });
+    
+    // Handle file selection
+    imageInput.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            showImageRecognitionModal();
+            // Get the file and pass it to the handleFileUpload function
+            const file = e.target.files[0];
+            setTimeout(() => {
+                handleFileUpload(file);
+            }, 300);
+        }
+    });
 }
 
 /**

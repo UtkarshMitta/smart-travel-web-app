@@ -933,6 +933,22 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Override the original search function
   window.performSmartSearch = performEnhancedSearch;
+  
+  // Modify the search input to only search when Enter key is pressed
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    // Remove the existing event listeners that might trigger search on input
+    const newSearchInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+    
+    // Add a keydown event listener for Enter key
+    newSearchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && this.value.trim().length > 0) {
+        e.preventDefault();
+        performEnhancedSearch(this.value.trim());
+      }
+    });
+  }
 });
 
 /**
@@ -986,10 +1002,18 @@ function populateTrendingDestinations() {
     }
   ];
   
-  // Clear any existing content
-  trendingList.innerHTML = '<h3>Trending Destinations</h3>';
+  // We'll handle clearing in the next steps
   
   // Create and append destination items
+  // First clear existing items, keeping the heading
+  const heading = trendingList.querySelector('h3');
+  if (heading) {
+    trendingList.innerHTML = '';
+    trendingList.appendChild(heading);
+  } else {
+    trendingList.innerHTML = '<h3>Trending Destinations</h3>';
+  }
+  
   trendingDestinations.forEach(destination => {
     const trendingItem = document.createElement('div');
     trendingItem.className = 'trending-item';

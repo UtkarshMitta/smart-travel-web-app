@@ -132,36 +132,33 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Add event listener for search input
     let searchTimeout;
-    searchInput.addEventListener('input', function() {
-        const query = searchInput.value.trim();
-        
-        // Clear previous timeout
-        clearTimeout(searchTimeout);
-        
-        // Hide results container
-        searchResults.style.display = 'none';
-        
-        // Always clear search mode first
-        clearSearchMode();
-        
-        // Don't search if query is too short
-        if (query.length < 2) {
-            searchLoading.style.display = 'none';
+    searchInput.addEventListener('keydown', function(e) {
+        // Only trigger search when Enter key is pressed
+        if (e.key === 'Enter') {
+            const query = searchInput.value.trim();
             
-            // Make sure trending list is visible if search is canceled/too short
-            const trendingList = document.querySelector('.trending-list');
-            if (trendingList) {
-                trendingList.style.opacity = '1';
-                trendingList.style.transform = '';
+            // Hide results container
+            searchResults.style.display = 'none';
+            
+            // Always clear search mode first
+            clearSearchMode();
+            
+            // Don't search if query is too short
+            if (query.length < 2) {
+                searchLoading.style.display = 'none';
+                
+                // Make sure trending list is visible if search is canceled/too short
+                const trendingList = document.querySelector('.trending-list');
+                if (trendingList) {
+                    trendingList.style.opacity = '1';
+                    trendingList.style.transform = '';
+                }
+                return;
             }
-            return;
-        }
-        
-        // Set timeout to prevent too many API calls
-        searchTimeout = setTimeout(() => {
+            
             // Start the smart search process
             performSmartSearch(query);
-        }, 500);
+        }
     });
     
     /**
