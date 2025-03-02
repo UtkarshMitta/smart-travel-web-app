@@ -171,10 +171,10 @@ document.addEventListener('DOMContentLoaded', async function() {
      * Clear search mode and reset the UI
      */
     function clearSearchMode() {
-        // Find map container and remove search-mode class
-        const mapContainer = document.querySelector('.map-container');
-        if (mapContainer) {
-            mapContainer.classList.remove('search-mode');
+        // Find discover section and remove search-active class
+        const discoverSection = document.querySelector('#discover');
+        if (discoverSection) {
+            discoverSection.classList.remove('search-active');
         }
         
         // Hide search results container
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Restore trending list to center position
         const trendingList = document.querySelector('.trending-list');
         if (trendingList) {
-            trendingList.style.transform = 'translateX(0)';
+            trendingList.style.transform = '';
         }
     }
     
@@ -796,27 +796,33 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     /**
-     * Update the map overlay with search results
+     * Update the search results display
      * @param {Array} destinations - Array of matching destinations
      * @param {string} query - The original search query
      * @param {Object} keywordScores - The keyword scores from Claude
      */
     function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
         // Get the containers
-        const mapContainer = document.querySelector('.map-container');
-        const searchResultsContainer = document.querySelector('.search-results-container');
-        const searchDestinationCards = document.getElementById('search-destination-cards');
-        const trendingList = document.querySelector('.trending-list');
+        const discoverSection = document.querySelector('#discover');
+        const discoverGrid = document.querySelector('.discover-grid');
+        const searchResultsContainer = document.createElement('div');
+        searchResultsContainer.className = 'search-results-container';
+        const searchDestinationCards = document.createElement('div');
+        searchDestinationCards.id = 'search-destination-cards';
+        searchResultsContainer.appendChild(searchDestinationCards);
         
-        if (!mapContainer || !searchResultsContainer || !searchDestinationCards) return;
+        // Remove any existing search results containers
+        const existingContainer = document.querySelector('.search-results-container');
+        if (existingContainer) {
+            existingContainer.remove();
+        }
         
-        // Add search-mode class to the map container to trigger the CSS transition
-        mapContainer.classList.add('search-mode');
+        // Add the new container to the discover grid
+        discoverGrid.prepend(searchResultsContainer);
         
-        // Adjust layout - shift trending destinations to the right
-        if (trendingList) {
-            trendingList.style.transform = 'translateX(10%)';
-            trendingList.style.transition = 'transform 0.4s ease';
+        // Add search-active class to discover section
+        if (discoverSection) {
+            discoverSection.classList.add('search-active');
         }
         
         // Clear previous cards
@@ -844,6 +850,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             searchDestinationCards.appendChild(noResultsCard);
             return;
         }
+        
+        // Add destination cards for each search result
+        destinations.forEach(destination => {
+            const card = createSearchResultCard(destination);
+            searchDestinationCards.appendChild(card);
+        });
+    }
         
         // Add destination cards for each search result
         destinations.forEach(destination => {
