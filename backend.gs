@@ -1336,15 +1336,15 @@ function doGet(e) {
     
     // Execute the action
     switch (action) {
-      case 'smartSearch':
-        // Extract the search data from the parameters
-        const searchData = data || params;
-        result = smartSearch(searchData);
+      case 'callClaudeApi':
+        // Extract the request data from the parameters
+        const requestData = data || params;
+        result = callClaudeApi(requestData);
         break;
         
       case 'getApiKey':
         // This endpoint is deprecated as API key is now handled securely on the backend
-        result = { success: false, message: 'This endpoint is deprecated. Use smartSearch instead.' };
+        result = { success: false, message: 'This endpoint is deprecated. Use callClaudeApi instead.' };
         break;
       case 'signup':
         result = createUser(data || params);
@@ -1666,11 +1666,15 @@ function callClaudeApi(requestData) {
 
   try {
 
-    // Your API key (consider moving this to the API_KEYS sheet in production)
-
-    const apiKey = "";
-
+    // Get API key from the database
+    const apiKey = getApiKey('CLAUDE_API_KEY');
     
+    if (!apiKey) {
+      return {
+        success: false,
+        message: 'API key not found or invalid'
+      };
+    }
 
     // Set default model if not provided
 

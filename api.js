@@ -14,12 +14,12 @@ const API = {
     },
     
     /**
-     * Use Smart Search via the backend (powered by Claude AI)
-     * @param {object} searchData - Object containing query and keywords
+     * Call Claude API via the backend
+     * @param {object} requestData - Request data to send to Claude API
      * @returns {Promise} - Promise that resolves with the API response
      */
-    smartSearch: function(searchData) {
-        return this.post('smartSearch', searchData);
+    callClaudeApi: function(requestData) {
+        return this.post('callClaudeApi', requestData);
     },
     
     /**

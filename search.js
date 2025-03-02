@@ -161,21 +161,52 @@ document.addEventListener('DOMContentLoaded', async function() {
      */
     async function analyzeQueryWithClaude(query) {
         try {
-            // Prepare the query for Claude AI analysis
-            const queryData = {
-                query: query,
-                keywords: PREDEFINED_KEYWORDS
+            // Prepare the Claude API request
+            const requestData = {
+                messages: [
+                    {
+                        role: 'user',
+                        content: `I need you to analyze this travel search query: "${query}"
+                        
+                        Please rank how well it matches each of these travel keywords on a scale from 0-10, where 10 is a perfect match:
+                        ${PREDEFINED_KEYWORDS.join(', ')}
+                        
+                        Return your response as a JSON object with keywords as keys and scores as values. For example:
+                        {"beach": 9, "mountain": 0, ...}
+                        
+                        Only include the JSON in your response with no other text.`
+                    }
+                ]
             };
             
-            // Use our API service to call the backend smart search proxy
-            const response = await API.smartSearch(queryData);
+            // Use our API service to call the backend callClaudeApi function
+            const response = await API.callClaudeApi(requestData);
             
             if (!response.success) {
                 throw new Error(`API request failed: ${response.message}`);
             }
             
-            // Return the keyword scores from the backend
-            return response.keywordScores;
+            // Extract the JSON object from Claude's response
+            let keywordScores = {};
+            try {
+                // Try to parse the content directly
+                const content = response.data.content[0].text;
+                
+                // Use regex to extract the JSON object from the response
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    keywordScores = JSON.parse(jsonMatch[0]);
+                } else {
+                    // Fallback to manually scoring based on query keywords
+                    keywordScores = fallbackScoring(query);
+                }
+            } catch (parseError) {
+                console.error('Error parsing Claude response:', parseError);
+                // Fallback to manual scoring
+                keywordScores = fallbackScoring(query);
+            }
+            
+            return keywordScores;
             
         } catch (error) {
             console.error('Error calling Claude API via backend:', error);
