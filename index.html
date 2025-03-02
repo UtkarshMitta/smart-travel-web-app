@@ -2280,18 +2280,28 @@
             const userAvatar = document.getElementById('user-avatar');
             let currentUser = null;
             
+            // Global authentication state
+            let isAuthenticated = false;
+            
             // Try to get user from local storage
             function checkUserAuthentication() {
                 const storedUser = localStorage.getItem('user');
+                console.log('Checking authentication, stored user data available:', !!storedUser);
+                
                 if (storedUser) {
                     try {
                         currentUser = JSON.parse(storedUser);
                         if (currentUser && currentUser.token) {
+                            console.log('User authenticated:', currentUser.firstName, currentUser.lastName);
+                            
                             // User is logged in
                             // Set user initial in avatar
                             if (currentUser.firstName) {
                                 userAvatar.textContent = currentUser.firstName.charAt(0);
                             }
+                            
+                            // Set global authentication state
+                            isAuthenticated = true;
                             return true;
                         }
                     } catch (error) {
@@ -2303,7 +2313,7 @@
             }
             
             // Initial authentication check
-            const isAuthenticated = checkUserAuthentication();
+            checkUserAuthentication();
             
             // Show auth overlay for protected actions
             function requireAuth(callback) {
@@ -2326,6 +2336,11 @@
             // Function to make authenticated API calls using JSONP
             async function apiCall(action, method = 'GET', data = null) {
                 try {
+                    console.log(`Making API call: ${action} (method: ${method})`);
+                    
+                    // Check authentication again before every API call
+                    checkUserAuthentication();
+                    
                     // Create a unique callback name for this request
                     const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
                     
@@ -2354,9 +2369,12 @@
                         
                         // Add data if provided
                         if (data) {
-                            // Add auth token if user is logged in
+                            // Always add token data if the user is logged in
                             if (currentUser && currentUser.token) {
                                 data.token = currentUser.token;
+                                console.log(`Adding auth token to request: ${action}`);
+                            } else {
+                                console.log(`No auth token available for request: ${action}`);
                             }
                             
                             // Encode the data and add it to the URL
@@ -2365,17 +2383,21 @@
                         } else if (currentUser && currentUser.token) {
                             // If no data but we have a token, add it separately
                             url += `&token=${encodeURIComponent(currentUser.token)}`;
+                            console.log(`Adding token as URL parameter for request: ${action}`);
                         }
                         
                         // Set the script source to the constructed URL
                         script.src = url;
+                        console.log(`API URL: ${url}`);
                         
                         // Add the script to the page to execute the request
                         document.body.appendChild(script);
                     });
                     
                     // Wait for and return the JSONP response
-                    return await jsonpPromise;
+                    const response = await jsonpPromise;
+                    console.log(`API response for ${action}:`, response);
+                    return response;
                 } catch (error) {
                     console.error(`API error (${action}):`, error);
                     return { 
@@ -2387,11 +2409,58 @@
             
             // Function to fetch destinations
             async function fetchDestinations() {
-                const response = await apiCall('getDestinations');
-                if (response.success && response.destinations) {
-                    return response.destinations;
+                try {
+                    console.log('Fetching destinations from API...');
+                    
+                    // Make the API call with proper JSONP method
+                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    
+                    // Create a promise to handle the JSONP response
+                    const jsonpPromise = new Promise((resolve, reject) => {
+                        // Create a global callback function that will be called by the script
+                        window[jsonpCallback] = function(responseData) {
+                            // Clean up
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            resolve(responseData);
+                        };
+                        
+                        // Create a script element to make the request
+                        const script = document.createElement('script');
+                        
+                        // Handle errors
+                        script.onerror = function() {
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            reject(new Error('API request failed: Could not fetch destinations'));
+                        };
+                        
+                        // Set up the URL with the callback
+                        script.src = `${API_BASE_URL}?action=getDestinations&callback=${jsonpCallback}`;
+                        
+                        // Add auth token if user is logged in
+                        if (currentUser && currentUser.token) {
+                            script.src += `&token=${encodeURIComponent(currentUser.token)}`;
+                        }
+                        
+                        // Add the script to the page to execute the request
+                        document.body.appendChild(script);
+                    });
+                    
+                    // Wait for the JSONP response
+                    const response = await jsonpPromise;
+                    console.log('API response for destinations:', response);
+                    
+                    if (response && response.success && response.destinations) {
+                        return response.destinations;
+                    } else {
+                        console.error('Invalid destination data returned from API:', response);
+                        return null;
+                    }
+                } catch (error) {
+                    console.error('Error fetching destinations:', error);
+                    return null;
                 }
-                return null;
             }
             
             // Function to load trending destinations from API
@@ -2487,23 +2556,130 @@
             
             // Function to send chat message
             async function sendChatMessage(channelId, messageText) {
-                if (!isAuthenticated) return false;
+                // Always check authentication status before proceeding
+                if (!isAuthenticated) {
+                    // Try to refresh authentication state
+                    checkUserAuthentication();
+                    if (!isAuthenticated) {
+                        console.warn('Cannot send message: User not authenticated');
+                        return false;
+                    }
+                }
                 
-                const response = await apiCall('sendMessage', 'POST', {
-                    channelId,
-                    message: messageText
-                });
-                
-                return response.success;
+                try {
+                    // Make the API call with proper JSONP method
+                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    
+                    // Prepare the data
+                    const data = {
+                        channelId,
+                        message: messageText
+                    };
+                    
+                    // Add auth token
+                    if (currentUser && currentUser.token) {
+                        data.token = currentUser.token;
+                    } else {
+                        console.warn('No auth token available');
+                        return false;
+                    }
+                    
+                    // Create a promise to handle the JSONP response
+                    const jsonpPromise = new Promise((resolve, reject) => {
+                        // Create a global callback function that will be called by the script
+                        window[jsonpCallback] = function(responseData) {
+                            // Clean up
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            resolve(responseData);
+                        };
+                        
+                        // Create a script element to make the request
+                        const script = document.createElement('script');
+                        
+                        // Handle errors
+                        script.onerror = function() {
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            reject(new Error('API request failed: Could not send message'));
+                        };
+                        
+                        // Set up the URL with the callback and data
+                        const dataEncoded = encodeURIComponent(JSON.stringify(data));
+                        script.src = `${API_BASE_URL}?action=sendMessage&callback=${jsonpCallback}&data=${dataEncoded}`;
+                        
+                        // Add the script to the page to execute the request
+                        document.body.appendChild(script);
+                    });
+                    
+                    // Wait for the JSONP response
+                    const response = await jsonpPromise;
+                    console.log('Send message response:', response);
+                    
+                    return response && response.success;
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    return false;
+                }
             }
             
             // Function to fetch channel messages
             async function fetchChannelMessages(channelId) {
-                const response = await apiCall('getChannelMessages', 'POST', { channelId });
-                if (response.success && response.messages) {
-                    return response.messages;
+                try {
+                    console.log('Fetching channel messages for:', channelId);
+                    
+                    // Make the API call with proper JSONP method
+                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    
+                    // Prepare the data
+                    const data = { channelId };
+                    
+                    // Add auth token if user is logged in
+                    if (currentUser && currentUser.token) {
+                        data.token = currentUser.token;
+                    }
+                    
+                    // Create a promise to handle the JSONP response
+                    const jsonpPromise = new Promise((resolve, reject) => {
+                        // Create a global callback function that will be called by the script
+                        window[jsonpCallback] = function(responseData) {
+                            // Clean up
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            resolve(responseData);
+                        };
+                        
+                        // Create a script element to make the request
+                        const script = document.createElement('script');
+                        
+                        // Handle errors
+                        script.onerror = function() {
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            reject(new Error('API request failed: Could not fetch channel messages'));
+                        };
+                        
+                        // Set up the URL with the callback and data
+                        const dataEncoded = encodeURIComponent(JSON.stringify(data));
+                        script.src = `${API_BASE_URL}?action=getChannelMessages&callback=${jsonpCallback}&data=${dataEncoded}`;
+                        
+                        // Add the script to the page to execute the request
+                        document.body.appendChild(script);
+                    });
+                    
+                    // Wait for the JSONP response
+                    const response = await jsonpPromise;
+                    console.log('Channel messages response:', response);
+                    
+                    if (response && response.success && response.messages) {
+                        return response.messages;
+                    }
+                    
+                    return [];
+                } catch (error) {
+                    console.error('Error fetching channel messages:', error);
+                    return [];
                 }
-                return [];
             }
             
             // Function to connect with traveler
@@ -3138,8 +3314,20 @@
             
             // Send message function
             async function sendMessage() {
+                // Check authentication again in case user just logged in
                 if (!isAuthenticated) {
-                    requireAuth();
+                    console.log('User not authenticated, showing login overlay');
+                    checkUserAuthentication(); // Try to refresh authentication state
+                }
+                
+                // Still not authenticated after check
+                if (!isAuthenticated) {
+                    console.log('Still not authenticated, showing auth overlay');
+                    requireAuth(() => {
+                        // This callback will run if they succeed at logging in through the overlay
+                        console.log('User authenticated via overlay, attempting to send message again');
+                        sendMessage(); // Try again after auth
+                    });
                     return;
                 }
                 

@@ -539,6 +539,7 @@
                         
                         // Store user session data
                         localStorage.setItem('user', JSON.stringify(userData));
+                        console.log('User data stored in localStorage:', userData);
                         
                         // Show success message
                         loginSuccess.textContent = 'Login successful! Redirecting...';
