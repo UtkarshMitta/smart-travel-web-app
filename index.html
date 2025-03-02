@@ -420,20 +420,7 @@
                 </div>
                 
                 <div class="discover-grid">
-                    <div class="map-container">
-                        <div id="map"></div>
-                        <div class="map-overlay">
-                            <div class="destinations-container">
-                                <div class="search-results-container">
-                                    <h3 class="section-title">Search Results</h3>
-                                    <div id="search-destination-cards"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="map-hotspots">
-                            <!-- Hotspots will be added dynamically -->
-                        </div>
-                    </div>
+                    
                     
                     <div class="trending-list">
                         <h3>Trending Destinations</h3>
@@ -818,5 +805,28 @@
             }
         });
     </script>
+    <style>
+    /* Critical fixes for search UI */
+    #discover.search-active .trending-list {
+        transform: translateX(30%) translateY(20px);
+        max-width: 500px;
+    }
+    
+    .search-results-container {
+        z-index: 30;
+    }
+    
+    .search-active .discover-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+    
+    /* Ensure dropdown search results also display properly */
+    .search-results {
+        z-index: 100;
+    }
+</style>
 </body>
 </html>s

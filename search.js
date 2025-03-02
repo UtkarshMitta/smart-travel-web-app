@@ -151,14 +151,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Hide results container
         searchResults.style.display = 'none';
         
+        // Always clear search mode first
+        clearSearchMode();
+        
         // Don't search if query is too short
         if (query.length < 2) {
             searchLoading.style.display = 'none';
-            
-            // Clear search mode if input is cleared
-            if (query.length === 0) {
-                clearSearchMode();
-            }
             return;
         }
         
@@ -173,21 +171,26 @@ document.addEventListener('DOMContentLoaded', async function() {
      * Clear search mode and reset the UI
      */
     function clearSearchMode() {
-        const mapOverlay = document.querySelector('.map-overlay');
-        const searchResultsContainer = document.querySelector('.search-results-container');
-        const trendingList = document.querySelector('.trending-list');
-        
-        if (mapOverlay) {
-            mapOverlay.classList.remove('search-mode');
+        // Find discover section and remove search-active class
+        const discoverSection = document.querySelector('#discover');
+        if (discoverSection) {
+            discoverSection.classList.remove('search-active');
         }
         
+        // Hide search results container
+        const searchResultsContainer = document.querySelector('.search-results-container');
         if (searchResultsContainer) {
-            searchResultsContainer.style.display = 'none';
+            searchResultsContainer.classList.remove('active');
+            // Hide after animation completes
+            setTimeout(() => {
+                searchResultsContainer.style.display = 'none';
+            }, 400);
         }
         
         // Restore trending list to center position
+        const trendingList = document.querySelector('.trending-list');
         if (trendingList) {
-            trendingList.style.transform = 'translateX(0)';
+            trendingList.style.transform = '';
         }
     }
     
@@ -196,6 +199,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!e.target.closest('.search-bar')) {
             searchResults.style.display = 'none';
             searchLoading.style.display = 'none';
+            
+            // Also clear search mode when clicking outside
+            clearSearchMode();
         }
     });
     
@@ -266,10 +272,10 @@ document.addEventListener('DOMContentLoaded', async function() {
      * @param {number} progress - The progress percentage (0-100)
      */
     function updateLoadingStatus(statusText, progress) {
-        // Create terminal-style loading text
+        // Create terminal-style loading text with typing effect
         const loadingText = document.createElement('div');
         loadingText.className = 'search-loading-text';
-        loadingText.textContent = '> ' + statusText;
+        loadingText.innerHTML = `<span class="loading-command"></span>`;
         
         // Create progress bar
         const progressBar = document.createElement('div');
@@ -278,17 +284,33 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Create status text
         const statusElement = document.createElement('div');
         statusElement.className = 'search-loading-status';
-        statusElement.textContent = `Processing | ${progress}% complete`;
+        statusElement.innerHTML = `<span class="status-label">CLUSTER_SEARCH</span> <span class="status-progress">${progress}% complete</span>`;
         
         // Add elements to loading container
         searchLoading.appendChild(loadingText);
         searchLoading.appendChild(progressBar);
         searchLoading.appendChild(statusElement);
         
-        // Animate progress bar
+        // Type the text character by character for a more dynamic effect
+        const textNode = loadingText.querySelector('.loading-command');
+        const text = statusText;
+        let i = 0;
+        const typeInterval = setInterval(() => {
+            if (i < text.length) {
+                textNode.textContent += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(typeInterval);
+            }
+        }, 20);
+        
+        // Animate progress bar with a slight delay for better visual effect
         setTimeout(() => {
             progressBar.style.width = `${progress}%`;
-        }, 100);
+        }, 300);
+        
+        // Add pulse animation to the status element
+        statusElement.style.animation = 'pulse 1.5s infinite';
     }
     
     /**
@@ -619,6 +641,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.log(`  Keywords: ${d.matchedKeywords.map(k => `${k.keyword}:${k.score}`).join(', ')}`);
         });
     }
+    
     function displaySearchResults(destinations, query, keywordScores) {
         // Log detailed search results for debugging
         logSearchResults(destinations, query);
@@ -633,18 +656,34 @@ document.addEventListener('DOMContentLoaded', async function() {
             .slice(0, 3)
             .map(entry => entry[0]);
         
+        // Create a dynamic header explaining the search results
+        const searchHeader = document.createElement('div');
+        searchHeader.className = 'search-header';
+        searchHeader.innerHTML = `
+            <div class="search-header-title">
+                <i class="fas fa-search-location"></i> Search Results
+                <span class="search-query">${query}</span>
+            </div>
+        `;
+        searchResults.appendChild(searchHeader);
+        
         // Show explanation if we have top keywords
         if (topKeywords.length > 0) {
             const explanationItem = document.createElement('div');
-            explanationItem.className = 'search-result-item';
+            explanationItem.className = 'search-result-item search-explanation';
             explanationItem.innerHTML = `
                 <div class="search-result-icon">
                     <i class="fas fa-brain"></i>
                 </div>
                 <div class="search-result-info">
-                    <div class="search-result-title">Smart Search Results</div>
+                    <div class="search-result-title">AI-Powered Search</div>
                     <div class="search-result-description">
-                        Your query matched best with: <span class="search-result-match">${topKeywords.join(', ')}</span>
+                        Your query matches best with: 
+                        <div class="keyword-tags">
+                            ${topKeywords.map(keyword => 
+                                `<span class="search-result-match"><i class="fas fa-tag"></i> ${keyword}</span>`
+                            ).join('')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -654,122 +693,168 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Update map overlay UI with search results
         updateMapOverlayWithSearchResults(destinations, query, keywordScores);
         
-        // Add destination results to dropdown
+        // Add destination results to dropdown with staggered animation
         if (destinations.length > 0) {
-            destinations.slice(0, 5).forEach(destination => {
+            destinations.slice(0, 5).forEach((destination, index) => {
                 // No need to find destination data again, we now include it in the search results
                 const destData = destination;
                 
                 const resultItem = document.createElement('div');
                 resultItem.className = 'search-result-item';
+                resultItem.style.animationDelay = `${index * 0.05}s`;
                 
                 // Get icon based on top keyword or use the destination's icon
                 const topKeyword = destination.matchedKeywords[0]?.keyword || 'city';
                 const icon = destData.icon || getIconForKeyword(topKeyword);
                 
-                // Format matched keywords for display
+                // Format matched keywords for display with more visual appeal
                 const keywordText = destination.matchedKeywords
-                    .map(k => `<span class="search-result-match">${k.keyword}${k.score > 8 ? ' ⭐' : ''}</span>`)
-                    .join(', ');
+                    .map(k => {
+                        // Use different styling for high-scoring matches
+                        const highScore = k.score > 8;
+                        return `<span class="search-result-match ${highScore ? 'high-score' : ''}">
+                            ${k.keyword}${highScore ? ' <i class="fas fa-star"></i>' : ''}
+                        </span>`;
+                    })
+                    .join('');
                 
-                // Create HTML for the result item with more destination details
+                // Create a confidence score indicator based on overall match score
+                const confidenceScore = Math.min(100, Math.round((destination.score / 30) * 100));
+                const confidenceClass = confidenceScore > 80 ? 'high' : (confidenceScore > 50 ? 'medium' : 'low');
+                
+                // Create HTML for the result item with enhanced visual display
                 resultItem.innerHTML = `
-                    <div class="search-result-icon">
+                    <div class="search-result-icon" data-region="${destData.region || 'unknown'}">
                         <i class="fas ${icon}"></i>
                     </div>
                     <div class="search-result-info">
-                        <div class="search-result-title">${destination.name}</div>
+                        <div class="search-result-title">${destination.name}
+                            <span class="confidence-score ${confidenceClass}">
+                                <i class="fas fa-chart-line"></i> ${confidenceScore}%
+                            </span>
+                        </div>
                         <div class="search-result-description">
-                            ${destData.description ? `<div class="destination-description">${destData.description.substring(0, 60)}${destData.description.length > 60 ? '...' : ''}</div>` : ''}
-                            <div>Matches: ${keywordText}</div>
-                            ${destData.region ? `<div class="destination-region"><i class="fas fa-map-marker-alt"></i> ${destData.region}</div>` : ''}
+                            ${destData.description ? 
+                                `<div class="destination-description">${destData.description.substring(0, 60)}${destData.description.length > 60 ? '...' : ''}</div>` 
+                                : ''}
+                            <div class="keyword-container">
+                                ${keywordText}
+                            </div>
+                            ${destData.region ? 
+                                `<div class="destination-region"><i class="fas fa-map-marker-alt"></i> ${destData.region}</div>` 
+                                : ''}
                         </div>
                     </div>
-                    ${destData.image ? `<div class="search-result-image" style="background-image: url('${destData.image}');"></div>` : ''}
+                    ${destData.image ? 
+                        `<div class="search-result-image" style="background-image: url('${destData.image}');"></div>` 
+                        : ''}
                 `;
                 
-                // Add click handler
+                // Add click handler with visual feedback
                 resultItem.addEventListener('click', () => {
-                    handleDestinationSelection(destination);
+                    // Add selection effect
+                    resultItem.classList.add('selecting');
+                    
+                    // Handle the actual selection after a short delay for better visual feedback
+                    setTimeout(() => {
+                        handleDestinationSelection(destination);
+                        resultItem.classList.remove('selecting');
+                    }, 300);
                 });
                 
                 searchResults.appendChild(resultItem);
             });
         } else {
-            // No results found
+            // No results found with improved styling
             const noResultsItem = document.createElement('div');
-            noResultsItem.className = 'search-result-item';
+            noResultsItem.className = 'search-result-item no-results';
             noResultsItem.innerHTML = `
                 <div class="search-result-icon">
-                    <i class="fas fa-search"></i>
+                    <i class="fas fa-search-minus"></i>
                 </div>
                 <div class="search-result-info">
-                    <div class="search-result-title">No results found</div>
+                    <div class="search-result-title">No matches found</div>
                     <div class="search-result-description">
-                        Try different keywords or browse the trending destinations
+                        <p>We couldn't find destinations matching "${query}"</p>
+                        <div class="suggestions">
+                            <p>Try:</p>
+                            <ul>
+                                <li>Using broader keywords (e.g., "beach" instead of specific beaches)</li>
+                                <li>Checking popular destinations in the trending section</li>
+                                <li>Searching by region (e.g., "Asia", "Europe")</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             `;
             searchResults.appendChild(noResultsItem);
         }
         
-        // Show results container
+        // Show results container with animation
         searchResults.style.display = 'block';
+        searchResults.style.animation = 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+    }
+
+function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
+    // Get the containers
+    const discoverSection = document.querySelector('#discover');
+    const discoverGrid = document.querySelector('.discover-grid');
+    
+    // Remove any existing search results containers
+    const existingContainer = document.querySelector('.search-results-container');
+    if (existingContainer) {
+        existingContainer.remove();
     }
     
-    /**
-     * Update the map overlay with search results
-     * @param {Array} destinations - Array of matching destinations
-     * @param {string} query - The original search query
-     * @param {Object} keywordScores - The keyword scores from Claude
-     */
-    function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
-        // Get the containers
-        const mapOverlay = document.querySelector('.map-overlay');
-        const searchResultsContainer = document.querySelector('.search-results-container');
-        const searchDestinationCards = document.getElementById('search-destination-cards');
-        const trendingList = document.querySelector('.trending-list');
-        
-        if (!mapOverlay || !searchResultsContainer || !searchDestinationCards) return;
-        
-        // Add search-mode class to the map overlay to trigger the CSS transition
-        mapOverlay.classList.add('search-mode');
-        
-        // Adjust layout - shift trending destinations to the right
-        if (trendingList) {
-            trendingList.style.transform = 'translateX(10%)';
-            trendingList.style.transition = 'transform 0.4s ease';
-        }
-        
-        // Clear previous cards
-        searchDestinationCards.innerHTML = '';
-        
-        // Show the search results container
-        searchResultsContainer.style.display = 'block';
-        
-        // No results case
-        if (destinations.length === 0) {
-            const noResultsCard = document.createElement('div');
-            noResultsCard.className = 'destination-card no-results';
-            noResultsCard.innerHTML = `
-                <div class="destination-card-header">
-                    <div class="destination-card-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <h4 class="destination-card-title">No matches found</h4>
-                </div>
-                <div class="destination-card-description">Try different search terms or explore trending destinations</div>
-            `;
-            searchDestinationCards.appendChild(noResultsCard);
-            return;
-        }
-        
-        // Add destination cards for each search result
-        destinations.forEach(destination => {
-            const card = createSearchResultCard(destination);
-            searchDestinationCards.appendChild(card);
-        });
+    // Create new search results container
+    const searchResultsContainer = document.createElement('div');
+    searchResultsContainer.className = 'search-results-container';
+    const searchDestinationCards = document.createElement('div');
+    searchDestinationCards.id = 'search-destination-cards';
+    searchResultsContainer.appendChild(searchDestinationCards);
+    
+    // Add the new container to the discover grid
+    discoverGrid.prepend(searchResultsContainer);
+    
+    // Ensure search-active class is applied to discover section
+    if (discoverSection) {
+        discoverSection.classList.add('search-active');
     }
+    
+    // Clear previous cards
+    searchDestinationCards.innerHTML = '';
+    
+    // Show the search results container with active class
+    searchResultsContainer.style.display = 'block';
+    
+    // Use setTimeout to trigger the transition after the container is added to the DOM
+    setTimeout(() => {
+        searchResultsContainer.classList.add('active');
+    }, 10);
+    
+    // No results case
+    if (destinations.length === 0) {
+        const noResultsCard = document.createElement('div');
+        noResultsCard.className = 'destination-card no-results';
+        noResultsCard.innerHTML = `
+            <div class="destination-card-header">
+                <div class="destination-card-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h4 class="destination-card-title">No matches found</h4>
+            </div>
+            <div class="destination-card-description">Try different search terms or explore trending destinations</div>
+        `;
+        searchDestinationCards.appendChild(noResultsCard);
+        return;
+    }
+    
+    // Add destination cards for each search result
+    destinations.forEach(destination => {
+        const card = createSearchResultCard(destination);
+        searchDestinationCards.appendChild(card);
+    });
+}
     
     /**
      * Create a destination card for search results
@@ -790,6 +875,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             .map(k => `${k.keyword}${k.score > 8 ? ' ⭐' : ''}`)
             .join(', ');
         
+        // Calculate a subtle background gradient based on the destination's region
+        const regionColors = {
+            'Asia': 'rgba(255, 153, 0, 0.03)',
+            'Europe': 'rgba(0, 102, 255, 0.03)',
+            'North America': 'rgba(255, 0, 102, 0.03)',
+            'South America': 'rgba(0, 204, 153, 0.03)',
+            'Africa': 'rgba(204, 102, 0, 0.03)',
+            'Oceania': 'rgba(102, 0, 204, 0.03)',
+            'Caribbean': 'rgba(0, 153, 255, 0.03)',
+            'Middle East': 'rgba(204, 153, 0, 0.03)'
+        };
+        
+        const regionColor = destination.region && regionColors[destination.region] ? 
+            regionColors[destination.region] : 'rgba(0, 120, 255, 0.03)';
+        
+        // Enhance the card with better styling and subtle animations
+        card.style.background = `linear-gradient(145deg, ${regionColor}, rgba(17, 17, 17, 0.9))`;
+        
+        // Create the card content with enhanced styling
         card.innerHTML = `
             <div class="destination-card-header">
                 <div class="destination-card-icon">
@@ -797,13 +901,32 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </div>
                 <h4 class="destination-card-title">${destination.name}</h4>
             </div>
-            <div class="destination-card-description">${destination.description || ''}</div>
+            <div class="destination-card-description">${destination.description || 'Explore this destination and connect with travelers heading there.'}</div>
             <div class="destination-card-stats">
                 <div class="destination-card-stat">
                     <i class="fas fa-tag"></i> ${keywordText}
                 </div>
             </div>
         `;
+        
+        // Add ripple effect on click
+        card.addEventListener('mousedown', function(e) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-effect';
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            
+            ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
         
         // Add click handler
         card.addEventListener('click', () => {
@@ -821,6 +944,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         // First try clicking on the corresponding trending item
         const trendingItems = document.querySelectorAll('.trending-item');
         let clicked = false;
+        
+        // Always clear search mode regardless of selection
+        clearSearchMode();
         
         trendingItems.forEach(item => {
             const itemTitle = item.querySelector('h4')?.textContent;
