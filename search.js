@@ -151,14 +151,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Hide results container
         searchResults.style.display = 'none';
         
+        // Always clear search mode first
+        clearSearchMode();
+        
         // Don't search if query is too short
         if (query.length < 2) {
             searchLoading.style.display = 'none';
-            
-            // Clear search mode if input is cleared
-            if (query.length === 0) {
-                clearSearchMode();
-            }
             return;
         }
         
@@ -173,12 +171,12 @@ document.addEventListener('DOMContentLoaded', async function() {
      * Clear search mode and reset the UI
      */
     function clearSearchMode() {
-        const mapOverlay = document.querySelector('.map-overlay');
+        const mapContainer = document.querySelector('.map-container');
         const searchResultsContainer = document.querySelector('.search-results-container');
         const trendingList = document.querySelector('.trending-list');
         
-        if (mapOverlay) {
-            mapOverlay.classList.remove('search-mode');
+        if (mapContainer) {
+            mapContainer.classList.remove('search-mode');
         }
         
         if (searchResultsContainer) {
@@ -797,15 +795,15 @@ document.addEventListener('DOMContentLoaded', async function() {
      */
     function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
         // Get the containers
-        const mapOverlay = document.querySelector('.map-overlay');
+        const mapContainer = document.querySelector('.map-container');
         const searchResultsContainer = document.querySelector('.search-results-container');
         const searchDestinationCards = document.getElementById('search-destination-cards');
         const trendingList = document.querySelector('.trending-list');
         
-        if (!mapOverlay || !searchResultsContainer || !searchDestinationCards) return;
+        if (!mapContainer || !searchResultsContainer || !searchDestinationCards) return;
         
-        // Add search-mode class to the map overlay to trigger the CSS transition
-        mapOverlay.classList.add('search-mode');
+        // Add search-mode class to the map container to trigger the CSS transition
+        mapContainer.classList.add('search-mode');
         
         // Adjust layout - shift trending destinations to the right
         if (trendingList) {
