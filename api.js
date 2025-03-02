@@ -80,16 +80,8 @@ const API = {
                 if (script.parentNode) document.body.removeChild(script);
                 delete window[callbackName];
                 
-                // For image recognition, provide a fallback response
-                if (action === 'identifyLocation') {
-                    console.warn('Image recognition API timed out, providing fallback response');
-                    resolve({
-                        success: false,
-                        message: 'API request timed out. The server may be unavailable.'
-                    });
-                } else {
-                    reject(new Error('JSONP request timed out'));
-                }
+                // Don't provide fallback responses - always reject with an error
+                reject(new Error('API request timed out after 10 seconds'));
             }, 10000); // 10 second timeout
             
             // Encode the data as a JSON string

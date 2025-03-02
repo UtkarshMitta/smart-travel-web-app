@@ -155,9 +155,12 @@ function hideSearchLoading() {
  * Get appropriate icon for a keyword or region
  * @param {string} keyword - The keyword or region
  * @returns {string} - The appropriate Font Awesome icon class
+ * @throws {Error} - If no keyword is provided
  */
 function getIconForKeyword(keyword) {
-  if (!keyword) return 'fa-search';
+  if (!keyword) {
+    throw new Error('No keyword provided for icon selection');
+  }
   
   const lcKeyword = keyword.toLowerCase();
   
@@ -195,7 +198,7 @@ function getIconForKeyword(keyword) {
     'solo': 'fa-user',
     'group': 'fa-users',
     
-    // Default
+    // Other
     'destination': 'fa-map-marker-alt',
     'location': 'fa-map-marker-alt',
     'city': 'fa-city'
@@ -208,7 +211,7 @@ function getIconForKeyword(keyword) {
     }
   }
   
-  return 'fa-globe'; // Default icon
+  throw new Error(`No icon found for keyword: ${keyword}`);
 }
 
 /**
@@ -221,15 +224,26 @@ function createEnhancedSearchResultCard(destination) {
   card.className = 'destination-card';
   card.dataset.id = destination.id;
   
-  // Create icon with better visual treatment
-  const icon = getIconForKeyword(destination.matchedKeywords[0]?.keyword || 'location');
+  // Create icon with better visual treatment (will throw error if no keyword exists)
+  const topKeyword = destination.matchedKeywords && destination.matchedKeywords.length > 0 ? 
+    destination.matchedKeywords[0].keyword : null;
+  
+  if (!topKeyword) {
+    throw new Error('Destination has no matched keywords');
+  }
+  
+  const icon = getIconForKeyword(topKeyword);
   
   // Create confidence indicator based on score
   const confidenceScore = Math.min(100, Math.round((destination.score / 30) * 100));
   const confidenceClass = confidenceScore > 80 ? 'high' : (confidenceScore > 50 ? 'medium' : 'low');
   
   // Format description text
-  const description = destination.description || '';
+  if (!destination.description) {
+    throw new Error('Destination has no description');
+  }
+  
+  const description = destination.description;
   const shortDesc = description.length > 60 ? description.substring(0, 60) + '...' : description;
   
   // Build card HTML with refined design
@@ -253,10 +267,10 @@ function createEnhancedSearchResultCard(destination) {
     </div>
     <div class="destination-card-stats">
       <div class="destination-card-stat">
-        <i class="fas fa-user"></i> ${destination.travelerCount || '0'} travelers
+        <i class="fas fa-user"></i> ${destination.travelerCount ? destination.travelerCount : (() => { throw new Error('Destination has no traveler count'); })()} travelers
       </div>
       <div class="destination-card-stat">
-        <i class="fas fa-map-marker-alt"></i> ${destination.region || 'Global'}
+        <i class="fas fa-map-marker-alt"></i> ${destination.region ? destination.region : (() => { throw new Error('Destination has no region'); })()}
       </div>
     </div>
   `;
@@ -346,6 +360,10 @@ async function performEnhancedSearch(query) {
     // Find matching destinations based on keyword scores
     const matchedDestinations = findMatchingDestinations(keywordScores);
     
+    if (!matchedDestinations || matchedDestinations.length === 0) {
+      throw new Error('No matching destinations found');
+    }
+    
     // Step 5: Finalizing results (80-100%)
     setTimeout(() => {
       updateSearchProgress('Finalizing results...', 90);
@@ -360,14 +378,11 @@ async function performEnhancedSearch(query) {
   } catch (error) {
     console.error('Error in enhanced search:', error);
     
-    // Show error state
-    updateSearchProgress('Search error occurred', 100);
+    // Show the error directly to the user
+    updateSearchProgress(`Error: ${error.message}`, 100);
     
-    // Hide error after delay
-    setTimeout(() => {
-      hideSearchLoading();
-      clearSearchMode();
-    }, 2000);
+    // Don't hide the error - let the user see it
+    document.getElementById('search-loading').style.color = 'red';
   }
 }
 
@@ -460,14 +475,9 @@ async function analyzeQueryWithClaude(query) {
         }
       });
       
-      // Add some random scores if no match found to avoid empty results
-      if (Object.keys(keywordScores).length < 3) {
-        const randomKeywords = ['beach', 'mountain', 'culture', 'food', 'adventure'];
-        randomKeywords.forEach(keyword => {
-          if (!keywordScores[keyword]) {
-            keywordScores[keyword] = Math.floor(Math.random() * 6) + 3;
-          }
-        });
+      // If no keyword matches at all, throw an error rather than providing random results
+      if (Object.keys(keywordScores).length === 0) {
+        throw new Error('No matching keywords found for query');
       }
       
       resolve(keywordScores);
@@ -767,28 +777,30 @@ function displaySearchResults(destinations, query, keywordScores) {
     `;
     searchResults.appendChild(searchHeader);
     
-    // Show explanation if we have top keywords
-    if (topKeywords.length > 0) {
-      const explanationItem = document.createElement('div');
-      explanationItem.className = 'search-result-item search-explanation';
-      explanationItem.innerHTML = `
-        <div class="search-result-icon">
-          <i class="fas fa-brain"></i>
-        </div>
-        <div class="search-result-info">
-          <div class="search-result-title">AI-Powered Search</div>
-          <div class="search-result-description">
-            Your query matches best with: 
-            <div class="keyword-tags">
-              ${topKeywords.map(keyword => 
-                `<span class="search-result-match"><i class="fas fa-tag"></i> ${keyword}</span>`
-              ).join('')}
-            </div>
+    // Explanation is required - we should always have top keywords
+    if (topKeywords.length === 0) {
+      throw new Error('No top keywords found in search results');
+    }
+    
+    const explanationItem = document.createElement('div');
+    explanationItem.className = 'search-result-item search-explanation';
+    explanationItem.innerHTML = `
+      <div class="search-result-icon">
+        <i class="fas fa-brain"></i>
+      </div>
+      <div class="search-result-info">
+        <div class="search-result-title">AI-Powered Search</div>
+        <div class="search-result-description">
+          Your query matches best with: 
+          <div class="keyword-tags">
+            ${topKeywords.map(keyword => 
+              `<span class="search-result-match"><i class="fas fa-tag"></i> ${keyword}</span>`
+            ).join('')}
           </div>
         </div>
-      `;
-      searchResults.appendChild(explanationItem);
-    }
+      </div>
+    `;
+    searchResults.appendChild(explanationItem);
     
     // Add destination results to dropdown with staggered animation
     if (destinations.length > 0) {
