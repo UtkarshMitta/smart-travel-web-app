@@ -1,5 +1,5 @@
 /* ===== CONFIGURATION ===== */
-/*  https://script.google.com/macros/s/AKfycbzCuzX3RgjMuz6OsX1f3mEunxbuxK2xkwOMKdTDYJvVGfKNIcaLtXh-hN008SMn_wvgpQ/exec  */
+/*  https://script.google.com/macros/s/AKfycby0XxOtJ6I8rwN0IRTilxdF3O3ucIShAdXym5z_ta_CPSCaRp0sYUAGVTSm5NSlHDt2Sw/exec  */
 const CONFIG = {
   SHEETS: {
     USERS: 'Users',
