@@ -1144,45 +1144,92 @@ function doGet(e) {
     const action = e.parameter.action || '';
     let result;
     
+    // Check if this is a JSONP request with a callback and possibly data
+    const callback = e.parameter.callback;
+    const token = e.parameter.token;
+    const encodedData = e.parameter.data;
+    
+    // Parse data parameter if provided (for JSONP POST simulation)
+    let data = null;
+    if (encodedData) {
+      try {
+        data = JSON.parse(encodedData);
+      } catch (parseError) {
+        console.error('Error parsing data parameter:', parseError);
+      }
+    }
+    
+    // If data exists, it's a JSONP POST simulation so merge params
+    const params = data ? {...e.parameter, ...data} : e.parameter;
+    
+    // Execute the action
     switch (action) {
+      case 'signup':
+        result = createUser(data || params);
+        break;
+      case 'login':
+        result = loginUser(data || params);
+        break;
+      case 'testerLogin':
+        result = testerLogin(data || params || {});
+        break;
+      case 'updateUser':
+        result = updateUser((data || params).userId, data || params);
+        break;
+      case 'createTrip':
+        result = createTrip(data || params);
+        break;
+      case 'createInvite':
+        result = createInvite(data || params);
+        break;
+      case 'respondToInvite':
+        result = respondToInvite((data || params).inviteId, (data || params).response);
+        break;
+      case 'createConnection':
+        result = createConnection(data || params);
+        break;
+      case 'sendMessage':
+        result = sendMessage(data || params);
+        break;
       case 'initDatabase':
         result = initializeDatabase();
         break;
       case 'getUser':
-        if (e.parameter.userId) {
-          result = getUserById(e.parameter.userId);
-        } else if (e.parameter.email) {
-          result = getUserByEmail(e.parameter.email);
+        if ((data || params).userId) {
+          result = getUserById((data || params).userId);
+        } else if ((data || params).email) {
+          result = getUserByEmail((data || params).email);
         } else {
           result = { success: false, message: 'No userId or email provided' };
         }
         break;
       case 'getUserTrips':
-        result = getTripsByUser(e.parameter.userId);
+        result = getTripsByUser((data || params).userId);
         break;
       case 'getTripsByDestination':
-        result = getTripsByDestination(e.parameter.destination);
+        result = getTripsByDestination((data || params).destination);
         break;
       case 'getUserConnections':
-        result = getUserConnections(e.parameter.userId);
+        result = getUserConnections((data || params).userId);
         break;
       case 'getUserInvites':
-        result = getUserInvites(e.parameter.userId, e.parameter.type || 'all');
+        result = getUserInvites((data || params).userId, (data || params).type || 'all');
         break;
       case 'getAllDestinations':
+      case 'getDestinations':
         result = getAllDestinations();
         break;
       case 'getTrendingDestinations':
-        result = getTrendingDestinations(parseInt(e.parameter.limit || 5));
+        result = getTrendingDestinations(parseInt((data || params).limit || 5));
         break;
       case 'searchDestinations':
-        result = searchDestinations(e.parameter.query || '');
+        result = searchDestinations((data || params).query || '');
         break;
       case 'getChannelMessages':
-        result = getChannelMessages(e.parameter.channelId, parseInt(e.parameter.limit || 50));
+        result = getChannelMessages((data || params).channelId, parseInt((data || params).limit || 50));
         break;
       case 'getDirectMessages':
-        result = getDirectMessages(e.parameter.userId1, e.parameter.userId2, parseInt(e.parameter.limit || 50));
+        result = getDirectMessages((data || params).userId1, (data || params).userId2, parseInt((data || params).limit || 50));
         break;
       case 'getAllChannels':
         result = getAllChannels();
@@ -1191,66 +1238,41 @@ function doGet(e) {
         result = { success: false, message: 'No action specified or invalid action' };
     }
     
-    return ContentService.createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    // Return the response - either as JSONP (with callback) or as regular JSON
+    if (callback) {
+      // JSONP response - wrap the JSON in the callback function
+      return ContentService.createTextOutput(callback + '(' + JSON.stringify(result) + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    } else {
+      // Regular JSON response
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
+    const errorResponse = {
       success: false,
       message: 'Error processing request: ' + error.message
-    })).setMimeType(ContentService.MimeType.JSON);
+    };
+    
+    // Check if this is a JSONP request with a callback
+    const callback = e.parameter.callback;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + JSON.stringify(errorResponse) + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    } else {
+      return ContentService.createTextOutput(JSON.stringify(errorResponse))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
   }
 }
 
 /**
  * Handle POST requests
+ * For uniformity, reroute to doGet with the same parameters to handle JSONP as well
  */
 function doPost(e) {
-  try {
-    const action = e.parameter.action || '';
-    let result;
-    
-    switch (action) {
-      case 'signup': // New user registration
-        result = createUser(e.parameter);
-        break;
-      case 'login': // Regular login with email and password
-        result = loginUser(e.parameter);
-        break;
-      case 'testerLogin': // Tester login bypasses password check
-        result = testerLogin(e.parameter);
-        break;
-      case 'updateUser':
-        result = updateUser(e.parameter.userId, e.parameter);
-        break;
-      case 'createTrip':
-        result = createTrip(e.parameter);
-        break;
-      case 'createInvite':
-        result = createInvite(e.parameter);
-        break;
-      case 'respondToInvite':
-        result = respondToInvite(e.parameter.inviteId, e.parameter.response);
-        break;
-      case 'createConnection':
-        result = createConnection(e.parameter);
-        break;
-      case 'sendMessage':
-        result = sendMessage(e.parameter);
-        break;
-      default:
-        result = { success: false, message: 'No action specified or invalid action' };
-    }
-    
-    return ContentService.createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
-    
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
-      success: false,
-      message: 'Error processing request: ' + error.message
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
+  return doGet(e);
 }
 
 /**
