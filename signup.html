@@ -439,21 +439,46 @@
                 signupSpinner.style.display = 'inline-block';
                 
                 try {
-                    // Making the API request to register the user
-                    const response = await fetch(`${API_BASE_URL}?action=signup`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
+                    // Using JSONP approach to bypass CORS
+                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    
+                    // Create a promise to handle the JSONP response
+                    const jsonpPromise = new Promise((resolve, reject) => {
+                        // Create a global callback function that will be called by the script
+                        window[jsonpCallback] = function(data) {
+                            // Clean up
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            resolve(data);
+                        };
+                        
+                        // Create a script element to make the request
+                        const script = document.createElement('script');
+                        
+                        // Handle errors
+                        script.onerror = function() {
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            reject(new Error('JSONP request failed'));
+                        };
+                        
+                        // Set up the URL with the callback and user data
+                        const userData = {
                             firstName,
                             lastName,
                             email,
                             password
-                        })
+                        };
+                        
+                        const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
+                        script.src = `${API_BASE_URL}?action=signup&callback=${jsonpCallback}&data=${userDataEncoded}`;
+                        
+                        // Add the script to the page
+                        document.body.appendChild(script);
                     });
                     
-                    const data = await response.json();
+                    // Wait for the JSONP response
+                    const data = await jsonpPromise;
                     
                     if (data.success) {
                         // Create user object for local storage

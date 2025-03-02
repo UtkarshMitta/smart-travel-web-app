@@ -2531,28 +2531,59 @@
                 }
             });
             
-            // Function to make authenticated API calls
+            // Function to make authenticated API calls using JSONP to bypass CORS
             async function apiCall(action, method = 'GET', data = null) {
                 try {
-                    const url = `${API_BASE_URL}?action=${action}`;
-                    const options = {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json'
+                    // Create a unique callback name for this request
+                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    
+                    // Create a promise to handle the JSONP response
+                    const jsonpPromise = new Promise((resolve, reject) => {
+                        // Create a global callback function that will be called by the script
+                        window[jsonpCallback] = function(responseData) {
+                            // Clean up
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            resolve(responseData);
+                        };
+                        
+                        // Create a script element to make the request
+                        const script = document.createElement('script');
+                        
+                        // Handle errors
+                        script.onerror = function() {
+                            document.body.removeChild(script);
+                            delete window[jsonpCallback];
+                            reject(new Error('JSONP request failed'));
+                        };
+                        
+                        // Set up the base URL with the action and callback
+                        let url = `${API_BASE_URL}?action=${action}&callback=${jsonpCallback}`;
+                        
+                        // Add data if provided
+                        if (data) {
+                            // Add auth token if user is logged in
+                            if (currentUser && currentUser.token) {
+                                data.token = currentUser.token;
+                            }
+                            
+                            // Encode the data and add it to the URL
+                            const dataEncoded = encodeURIComponent(JSON.stringify(data));
+                            url += `&data=${dataEncoded}`;
+                        } else if (currentUser && currentUser.token) {
+                            // If no data but we have a token, add it separately
+                            url += `&token=${encodeURIComponent(currentUser.token)}`;
                         }
-                    };
+                        
+                        // Set the script source to the constructed URL
+                        script.src = url;
+                        
+                        // Add the script to the page to execute the request
+                        document.body.appendChild(script);
+                    });
                     
-                    if (data) {
-                        options.body = JSON.stringify(data);
-                    }
-                    
-                    // Add auth token if user is logged in
-                    if (currentUser && currentUser.token) {
-                        options.headers['Authorization'] = `Bearer ${currentUser.token}`;
-                    }
-                    
-                    const response = await fetch(url, options);
-                    return await response.json();
+                    // Wait for and return the JSONP response
+                    return await jsonpPromise;
                 } catch (error) {
                     console.error(`API error (${action}):`, error);
                     return { success: false, message: 'Network error. Please try again.' };
