@@ -840,6 +840,9 @@
         </main>
     </div>
     
+    <script src="config.js"></script>
+    <!-- Load local config if it exists (not in Git) -->
+    <script src="config.local.js" onerror="console.log('No local config found, using defaults')"></script>
     <script src="api.js"></script>
     <script src="script.js"></script>
     <script src="search.js"></script>
