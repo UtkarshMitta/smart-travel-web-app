@@ -2068,94 +2068,11 @@
                     
                     <div class="trending-list">
                         <h3>Trending Destinations</h3>
-                        
-                        <div class="trending-item">
-                            <div class="trending-icon">
-                                <i class="fas fa-umbrella-beach"></i>
-                            </div>
-                            <div class="trending-info">
-                                <h4>Bali, Indonesia</h4>
-                                <p>Southeast Asia's tropical paradise</p>
-                                <div class="stat-badges">
-                                    <div class="stat-badge">
-                                        <i class="fas fa-user"></i> 248 travelers
-                                    </div>
-                                    <div class="stat-badge">
-                                        <i class="fas fa-arrow-trend-up"></i> +15%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="trending-item">
-                            <div class="trending-icon">
-                                <i class="fas fa-mountain"></i>
-                            </div>
-                            <div class="trending-info">
-                                <h4>Patagonia, Chile</h4>
-                                <p>Epic landscapes and outdoor adventures</p>
-                                <div class="stat-badges">
-                                    <div class="stat-badge">
-                                        <i class="fas fa-user"></i> 186 travelers
-                                    </div>
-                                    <div class="stat-badge">
-                                        <i class="fas fa-arrow-trend-up"></i> +22%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="trending-item">
-                            <div class="trending-icon">
-                                <i class="fas fa-city"></i>
-                            </div>
-                            <div class="trending-info">
-                                <h4>Lisbon, Portugal</h4>
-                                <p>Europe's sunniest capital city</p>
-                                <div class="stat-badges">
-                                    <div class="stat-badge">
-                                        <i class="fas fa-user"></i> 312 travelers
-                                    </div>
-                                    <div class="stat-badge">
-                                        <i class="fas fa-arrow-trend-up"></i> +18%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="trending-item">
-                            <div class="trending-icon">
-                                <i class="fas fa-landmark"></i>
-                            </div>
-                            <div class="trending-info">
-                                <h4>Kyoto, Japan</h4>
-                                <p>Ancient temples and cultural heritage</p>
-                                <div class="stat-badges">
-                                    <div class="stat-badge">
-                                        <i class="fas fa-user"></i> 205 travelers
-                                    </div>
-                                    <div class="stat-badge">
-                                        <i class="fas fa-arrow-trend-up"></i> +12%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="trending-item">
-                            <div class="trending-icon">
-                                <i class="fas fa-water"></i>
-                            </div>
-                            <div class="trending-info">
-                                <h4>Santorini, Greece</h4>
-                                <p>Iconic white and blue Aegean views</p>
-                                <div class="stat-badges">
-                                    <div class="stat-badge">
-                                        <i class="fas fa-user"></i> 274 travelers
-                                    </div>
-                                    <div class="stat-badge">
-                                        <i class="fas fa-arrow-trend-up"></i> +20%
-                                    </div>
-                                </div>
+                        <div id="trending-destinations-container">
+                            <!-- Trending destinations will be loaded dynamically from API -->
+                            <div id="trending-destinations-loading" style="text-align: center; padding: 20px;">
+                                <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
+                                <p style="margin-top: 1rem; color: var(--text-secondary);">Loading destinations...</p>
                             </div>
                         </div>
                     </div>
@@ -2177,148 +2094,23 @@
                 
                 <!-- Solo Travelers Content -->
                 <div id="solo-travelers" class="connect-content-section active">
-                    <div class="location-list">
-                        <!-- Solo Location Cards -->
-                        <div class="location-card" data-location="bali">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80" alt="Bali">
-                            </div>
-                            <div class="location-info">
-                                <h3>Bali, Indonesia</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-user"></i> 42 solo travelers
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Apr - Jun 2025
-                                </div>
-                            </div>
+                    <div class="location-list" id="solo-travelers-list">
+                        <div id="solo-travelers-loading" style="text-align: center; padding: 20px;">
+                            <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
+                            <p style="margin-top: 1rem; color: var(--text-secondary);">Loading solo travelers...</p>
                         </div>
-                        
-                        <div class="location-card" data-location="japan">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80" alt="Japan">
-                            </div>
-                            <div class="location-info">
-                                <h3>Tokyo, Japan</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-user"></i> 38 solo travelers
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Mar - May 2025
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="location-card" data-location="lisbon">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=800&q=80" alt="Lisbon">
-                            </div>
-                            <div class="location-info">
-                                <h3>Lisbon, Portugal</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-user"></i> 31 solo travelers
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Jun - Aug 2025
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="location-card" data-location="barcelona">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&w=800&q=80" alt="Barcelona">
-                            </div>
-                            <div class="location-info">
-                                <h3>Barcelona, Spain</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-user"></i> 27 solo travelers
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: May - Jul 2025
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="location-card" data-location="nyc">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80" alt="New York">
-                            </div>
-                            <div class="location-info">
-                                <h3>New York City, USA</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-user"></i> 25 solo travelers
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Apr - Jun 2025
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Solo location cards will be loaded dynamically -->
                     </div>
                 </div>
                 
                 <!-- Group Travelers Content -->
                 <div id="group-travelers" class="connect-content-section">
-                    <div class="location-list">
-                        <!-- Group Location Cards -->
-                        <div class="location-card" data-location="thailand">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80" alt="Thailand">
-                            </div>
-                            <div class="location-info">
-                                <h3>Bangkok, Thailand</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-users"></i> 15 groups
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Nov - Jan 2025
-                                </div>
-                            </div>
+                    <div class="location-list" id="group-travelers-list">
+                        <div id="group-travelers-loading" style="text-align: center; padding: 20px;">
+                            <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
+                            <p style="margin-top: 1rem; color: var(--text-secondary);">Loading group travelers...</p>
                         </div>
-                        
-                        <div class="location-card" data-location="costa-rica">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1623866530982-3b26e0b17b6d?auto=format&fit=crop&w=800&q=80" alt="Costa Rica">
-                            </div>
-                            <div class="location-info">
-                                <h3>Costa Rica</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-users"></i> 12 groups
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Jan - Mar 2025
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="location-card" data-location="italy">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80" alt="Italy">
-                            </div>
-                            <div class="location-info">
-                                <h3>Italy</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-users"></i> 11 groups
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: May - Jul 2025
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="location-card" data-location="greece">
-                            <div class="location-image">
-                                <img src="https://images.unsplash.com/photo-1530841377377-3ff06c0ca713?auto=format&fit=crop&w=800&q=80" alt="Greece">
-                            </div>
-                            <div class="location-info">
-                                <h3>Greek Islands</h3>
-                                <div class="traveler-count">
-                                    <i class="fas fa-users"></i> 9 groups
-                                </div>
-                                <div class="travel-dates">
-                                    <i class="fas fa-calendar-alt"></i> Most popular: Jun - Aug 2025
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Group location cards will be loaded dynamically -->
                     </div>
                 </div>
                 
@@ -2602,6 +2394,61 @@
                 return null;
             }
             
+            // Function to load trending destinations from API
+            async function loadTrendingDestinations() {
+                const trendingContainer = document.getElementById('trending-destinations-container');
+                
+                try {
+                    const destinations = await fetchDestinations();
+                    
+                    if (destinations && destinations.length > 0) {
+                        // Remove loading indicator
+                        trendingContainer.innerHTML = '';
+                        
+                        // Populate trending destinations
+                        destinations.forEach(destination => {
+                            // Determine icon based on destination type
+                            let iconClass = 'fa-map-marker-alt';
+                            if (destination.type === 'beach') iconClass = 'fa-umbrella-beach';
+                            else if (destination.type === 'mountain') iconClass = 'fa-mountain';
+                            else if (destination.type === 'city') iconClass = 'fa-city';
+                            else if (destination.type === 'historical') iconClass = 'fa-landmark';
+                            else if (destination.type === 'island') iconClass = 'fa-water';
+                            
+                            const trendingItem = document.createElement('div');
+                            trendingItem.className = 'trending-item';
+                            trendingItem.innerHTML = `
+                                <div class="trending-icon">
+                                    <i class="fas ${iconClass}"></i>
+                                </div>
+                                <div class="trending-info">
+                                    <h4>${destination.name}</h4>
+                                    <p>${destination.description || 'Popular destination'}</p>
+                                    <div class="stat-badges">
+                                        <div class="stat-badge">
+                                            <i class="fas fa-user"></i> ${destination.travelerCount || '0'} travelers
+                                        </div>
+                                        <div class="stat-badge">
+                                            <i class="fas fa-arrow-trend-up"></i> +${destination.trendPercentage || '0'}%
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            trendingContainer.appendChild(trendingItem);
+                        });
+                    } else {
+                        trendingContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No trending destinations available</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading trending destinations:', error);
+                    trendingContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Failed to load trending destinations</div>';
+                }
+            }
+            
+            // Load trending destinations
+            loadTrendingDestinations();
+            
             // Function to fetch travelers for a destination
             async function fetchTravelers(destinationId) {
                 const response = await apiCall('getTravelers', 'POST', { destinationId });
@@ -2778,29 +2625,78 @@
                 });
             });
             
-            // Create hotspots on the map
-            const hotspotPositions = [
-                { x: 30, y: 40 }, // Southeast Asia
-                { x: 48, y: 28 }, // Europe
-                { x: 20, y: 60 }, // South America
-                { x: 75, y: 45 }, // Japan
-                { x: 60, y: 65 }  // Australia
-            ];
-            
-            const mapHotspots = document.querySelector('.map-hotspots');
-            
-            hotspotPositions.forEach(pos => {
-                const hotspot = document.createElement('div');
-                hotspot.className = 'hotspot';
-                hotspot.style.left = `${pos.x}%`;
-                hotspot.style.top = `${pos.y}%`;
+            // Fetch hotspots data from API and create them on the map
+            async function loadMapHotspots() {
+                const mapHotspots = document.querySelector('.map-hotspots');
+                mapHotspots.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;"><div style="display: inline-block; width: 30px; height: 30px; border: 2px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div></div>';
                 
-                // Add random delay to pulse animation
-                const delay = Math.random() * 2;
-                hotspot.style.animationDelay = `${delay}s`;
-                
-                mapHotspots.appendChild(hotspot);
-            });
+                try {
+                    // Get hotspot data from API
+                    const response = await apiCall('getHotspots');
+                    
+                    if (response.success && response.hotspots) {
+                        // Clear loading indicator
+                        mapHotspots.innerHTML = '';
+                        
+                        // Create hotspots from API data
+                        response.hotspots.forEach(hotspot => {
+                            const hotspotElement = document.createElement('div');
+                            hotspotElement.className = 'hotspot';
+                            hotspotElement.style.left = `${hotspot.x}%`;
+                            hotspotElement.style.top = `${hotspot.y}%`;
+                            
+                            // Add random delay to pulse animation
+                            const delay = Math.random() * 2;
+                            hotspotElement.style.animationDelay = `${delay}s`;
+                            
+                            // Add data attributes for region and traveler count
+                            if (hotspot.region) {
+                                hotspotElement.setAttribute('data-region', hotspot.region);
+                            }
+                            
+                            if (hotspot.travelerCount) {
+                                hotspotElement.setAttribute('data-travelers', hotspot.travelerCount);
+                            }
+                            
+                            // Add click event if needed
+                            hotspotElement.addEventListener('click', function() {
+                                showNotification(`${hotspot.region || 'Region'}: ${hotspot.travelerCount || '0'} travelers`);
+                            });
+                            
+                            mapHotspots.appendChild(hotspotElement);
+                        });
+                    } else {
+                        // If API fails, use default positions
+                        const defaultPositions = [
+                            { x: 30, y: 40, region: 'Southeast Asia' }, 
+                            { x: 48, y: 28, region: 'Europe' }, 
+                            { x: 20, y: 60, region: 'South America' }, 
+                            { x: 75, y: 45, region: 'Japan' }, 
+                            { x: 60, y: 65, region: 'Australia' }
+                        ];
+                        
+                        mapHotspots.innerHTML = '';
+                        defaultPositions.forEach(pos => {
+                            const hotspot = document.createElement('div');
+                            hotspot.className = 'hotspot';
+                            hotspot.style.left = `${pos.x}%`;
+                            hotspot.style.top = `${pos.y}%`;
+                            
+                            // Add random delay to pulse animation
+                            const delay = Math.random() * 2;
+                            hotspot.style.animationDelay = `${delay}s`;
+                            
+                            mapHotspots.appendChild(hotspot);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading hotspots:', error);
+                    mapHotspots.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--text-secondary);">Failed to load map data</div>';
+                }
+            }
+            
+            // Load map hotspots
+            loadMapHotspots();
             
             // Connect tab inner navigation
             const connectTabs = document.querySelectorAll('.connect-tab');
@@ -2852,150 +2748,233 @@
             const detailLocationName = document.querySelector('.detail-location-name');
             const travelersList = document.querySelector('.travelers-list');
             
-            // Initialize destinations
-            async function initializeDestinations() {
+            // Function to load solo traveler locations
+            async function loadSoloTravelerLocations() {
+                const soloList = document.getElementById('solo-travelers-list');
+                
                 try {
-                    // Try to fetch destinations from API
-                    const destinations = await fetchDestinations();
+                    // Fetch destinations with solo travelers
+                    const response = await apiCall('getSoloDestinations');
                     
-                    if (destinations && destinations.length > 0) {
-                        // Update location counts and data from API
-                        destinations.forEach(destination => {
-                            const card = document.querySelector(`.location-card[data-location="${destination.id}"]`);
-                            if (card) {
-                                const travelerCountEl = card.querySelector('.traveler-count');
-                                if (travelerCountEl) {
-                                    const countText = destination.isSolo ? 
-                                        `<i class="fas fa-user"></i> ${destination.travelerCount} solo travelers` :
-                                        `<i class="fas fa-users"></i> ${destination.groupCount} groups`;
-                                    travelerCountEl.innerHTML = countText;
-                                }
-                                
-                                const datesEl = card.querySelector('.travel-dates');
-                                if (datesEl && destination.popularDates) {
-                                    datesEl.innerHTML = `<i class="fas fa-calendar-alt"></i> ${destination.popularDates}`;
-                                }
-                            }
+                    if (response.success && response.destinations && response.destinations.length > 0) {
+                        // Clear loading indicator
+                        soloList.innerHTML = '';
+                        
+                        // Add location cards
+                        response.destinations.forEach(destination => {
+                            const card = document.createElement('div');
+                            card.className = 'location-card';
+                            card.setAttribute('data-location', destination.id);
+                            
+                            card.innerHTML = `
+                                <div class="location-image">
+                                    <img src="${destination.imageUrl || 'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=800&q=80'}" alt="${destination.name}">
+                                </div>
+                                <div class="location-info">
+                                    <h3>${destination.name}</h3>
+                                    <div class="traveler-count">
+                                        <i class="fas fa-user"></i> ${destination.travelerCount || '0'} solo travelers
+                                    </div>
+                                    <div class="travel-dates">
+                                        <i class="fas fa-calendar-alt"></i> Most popular: ${destination.popularDates || 'Flexible dates'}
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Add click event for location details
+                            card.addEventListener('click', function() {
+                                handleLocationCardClick(destination.id);
+                            });
+                            
+                            soloList.appendChild(card);
                         });
+                    } else {
+                        soloList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No solo traveler destinations available</div>';
                     }
                 } catch (error) {
-                    console.error('Error initializing destinations:', error);
+                    console.error('Error loading solo traveler locations:', error);
+                    soloList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Failed to load solo traveler destinations</div>';
                 }
             }
             
-            // Initialize destinations
-            initializeDestinations();
-            
-            // Add click handler for location cards
-            locationCards.forEach(card => {
-                card.addEventListener('click', async function() {
-                    const locationId = this.getAttribute('data-location');
-                    const locationName = this.querySelector('h3').textContent;
+            // Function to load group traveler locations
+            async function loadGroupTravelerLocations() {
+                const groupList = document.getElementById('group-travelers-list');
+                
+                try {
+                    // Fetch destinations with group travelers
+                    const response = await apiCall('getGroupDestinations');
                     
-                    // Set location name in detail view
-                    detailLocationName.textContent = locationName;
-                    
-                    // Clear previous travelers list
-                    travelersList.innerHTML = '';
-                    
-                    // Show loading indicator
-                    travelersList.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-                            <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
-                            <p style="margin-top: 1rem; color: var(--text-secondary);">Loading travelers...</p>
-                        </div>
-                    `;
-                    
-                    // Show detail page with animation
-                    locationDetail.style.display = 'block';
-                    setTimeout(() => {
-                        locationDetail.classList.add('active');
-                    }, 10);
-                    
-                    try {
-                        // Fetch travelers for this location
-                        const travelers = await fetchTravelers(locationId);
-                        
+                    if (response.success && response.destinations && response.destinations.length > 0) {
                         // Clear loading indicator
-                        travelersList.innerHTML = '';
+                        groupList.innerHTML = '';
                         
-                        if (travelers && travelers.length > 0) {
-                            // Add travelers to the list
-                            travelers.forEach(traveler => {
-                                const travelerCard = document.createElement('div');
-                                travelerCard.className = 'traveler-card';
-                                travelerCard.setAttribute('data-traveler-id', traveler.id);
-                                
-                                const interestsHTML = traveler.interests.map(interest => `
-                                    <div class="traveler-interest">${interest}</div>
-                                `).join('');
-                                
-                                travelerCard.innerHTML = `
-                                    <div class="traveler-header">
-                                        <div class="traveler-avatar">${traveler.avatar || traveler.name.charAt(0)}</div>
-                                        <div>
-                                            <div class="traveler-name">${traveler.name}</div>
-                                            <div class="traveler-status">${traveler.status} · ${traveler.verified ? 'Verified' : 'Basic'}</div>
-                                        </div>
+                        // Add location cards
+                        response.destinations.forEach(destination => {
+                            const card = document.createElement('div');
+                            card.className = 'location-card';
+                            card.setAttribute('data-location', destination.id);
+                            
+                            card.innerHTML = `
+                                <div class="location-image">
+                                    <img src="${destination.imageUrl || 'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=800&q=80'}" alt="${destination.name}">
+                                </div>
+                                <div class="location-info">
+                                    <h3>${destination.name}</h3>
+                                    <div class="traveler-count">
+                                        <i class="fas fa-users"></i> ${destination.groupCount || '0'} groups
                                     </div>
-                                    <div class="traveler-dates">
-                                        <i class="fas fa-calendar"></i> ${traveler.dates}
+                                    <div class="travel-dates">
+                                        <i class="fas fa-calendar-alt"></i> Most popular: ${destination.popularDates || 'Flexible dates'}
                                     </div>
-                                    <div class="traveler-interests">
-                                        ${interestsHTML}
-                                    </div>
-                                    <button class="connect-btn">
-                                        <i class="fas fa-user-plus"></i> Connect
-                                    </button>
-                                `;
-                                
-                                travelersList.appendChild(travelerCard);
-                                
-                                // Add connect button event listener
-                                const connectBtn = travelerCard.querySelector('.connect-btn');
-                                connectBtn.addEventListener('click', async function(e) {
-                                    e.stopPropagation();
-                                    
-                                    if (!isAuthenticated) {
-                                        requireAuth();
-                                        return;
-                                    }
-                                    
-                                    const travelerId = travelerCard.getAttribute('data-traveler-id');
-                                    
-                                    // Set loading state
-                                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
-                                    this.disabled = true;
-                                    
-                                    try {
-                                        const success = await connectWithTraveler(travelerId);
-                                        
-                                        if (success) {
-                                            this.innerHTML = '<i class="fas fa-check"></i> Connected';
-                                            this.style.background = '#4ade80';
-                                            showNotification('Connection request sent successfully!');
-                                        } else {
-                                            this.innerHTML = '<i class="fas fa-user-plus"></i> Connect';
-                                            this.disabled = false;
-                                            showNotification('Failed to connect. Please try again.', 'error');
-                                        }
-                                    } catch (error) {
-                                        console.error('Error connecting with traveler:', error);
-                                        this.innerHTML = '<i class="fas fa-user-plus"></i> Connect';
-                                        this.disabled = false;
-                                        showNotification('An error occurred. Please try again.', 'error');
-                                    }
-                                });
-                            });
-                        } else {
-                            // Show a message if no travelers are found
-                            travelersList.innerHTML = `
-                                <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-                                    <i class="fas fa-user-slash" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 1rem; display: block;"></i>
-                                    <p>No travelers available for this location yet.</p>
                                 </div>
                             `;
+                            
+                            // Add click event for location details
+                            card.addEventListener('click', function() {
+                                handleLocationCardClick(destination.id);
+                            });
+                            
+                            groupList.appendChild(card);
+                        });
+                    } else {
+                        groupList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No group traveler destinations available</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading group traveler locations:', error);
+                    groupList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Failed to load group traveler destinations</div>';
+                }
+            }
+            
+            // Load solo and group traveler locations
+            loadSoloTravelerLocations();
+            
+            // Add tab change handler to load group data when tab is clicked
+            document.querySelector('.connect-tab[data-connect-tab="group"]').addEventListener('click', function() {
+                if (document.getElementById('group-travelers-list').innerHTML.includes('Loading')) {
+                    loadGroupTravelerLocations();
+                }
+            });
+            
+            // Handler function for location card click
+            async function handleLocationCardClick(locationId) {
+                // Clear previous travelers list
+                travelersList.innerHTML = '';
+                
+                // Show loading indicator
+                travelersList.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <div style="display: inline-block; width: 40px; height: 40px; border: 3px solid var(--border); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
+                        <p style="margin-top: 1rem; color: var(--text-secondary);">Loading travelers...</p>
+                    </div>
+                `;
+                
+                // Show detail page with animation
+                locationDetail.style.display = 'block';
+                setTimeout(() => {
+                    locationDetail.classList.add('active');
+                }, 10);
+                
+                try {
+                    // Get location details from API
+                    const detailsResponse = await apiCall('getLocationDetails', 'POST', { locationId });
+                    
+                    if (detailsResponse.success && detailsResponse.location) {
+                        const location = detailsResponse.location;
+                        
+                        // Set location name in detail view
+                        detailLocationName.textContent = location.name;
+                    } else {
+                        // Use fallback from attribute if no API data
+                        const locationCard = document.querySelector(`.location-card[data-location="${locationId}"]`);
+                        if (locationCard) {
+                            const nameEl = locationCard.querySelector('h3');
+                            if (nameEl) {
+                                detailLocationName.textContent = nameEl.textContent;
+                            } else {
+                                detailLocationName.textContent = 'Location Details';
+                            }
+                        } else {
+                            detailLocationName.textContent = 'Location Details';
                         }
+                    }
+                    
+                    // Fetch travelers for this location
+                    const travelers = await fetchTravelers(locationId);
+                    
+                    // Clear loading indicator
+                    travelersList.innerHTML = '';
+                    
+                    if (travelers && travelers.length > 0) {
+                        // Add travelers to the list
+                        travelers.forEach(traveler => {
+                            const travelerCard = document.createElement('div');
+                            travelerCard.className = 'traveler-card';
+                            travelerCard.setAttribute('data-traveler-id', traveler.id);
+                            
+                            const interestsHTML = traveler.interests && traveler.interests.length > 0 
+                                ? traveler.interests.map(interest => `
+                                    <div class="traveler-interest">${interest}</div>
+                                `).join('')
+                                : '<div class="traveler-interest">Travel</div>';
+                            
+                            travelerCard.innerHTML = `
+                                <div class="traveler-header">
+                                    <div class="traveler-avatar">${traveler.avatar || traveler.name.charAt(0)}</div>
+                                    <div>
+                                        <div class="traveler-name">${traveler.name}</div>
+                                        <div class="traveler-status">${traveler.status || 'Traveler'} · ${traveler.verified ? 'Verified' : 'Basic'}</div>
+                                    </div>
+                                </div>
+                                <div class="traveler-dates">
+                                    <i class="fas fa-calendar"></i> ${traveler.dates || 'Flexible dates'}
+                                </div>
+                                <div class="traveler-interests">
+                                    ${interestsHTML}
+                                </div>
+                                <button class="connect-btn">
+                                    <i class="fas fa-user-plus"></i> Connect
+                                </button>
+                            `;
+                            
+                            travelersList.appendChild(travelerCard);
+                            
+                            // Add connect button event listener
+                            const connectBtn = travelerCard.querySelector('.connect-btn');
+                            connectBtn.addEventListener('click', async function(e) {
+                                e.stopPropagation();
+                                
+                                if (!isAuthenticated) {
+                                    requireAuth();
+                                    return;
+                                }
+                                
+                                const travelerId = travelerCard.getAttribute('data-traveler-id');
+                                
+                                // Set loading state
+                                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                                this.disabled = true;
+                                
+                                try {
+                                    const success = await connectWithTraveler(travelerId);
+                                    
+                                    if (success) {
+                                        this.innerHTML = '<i class="fas fa-check"></i> Connected';
+                                        this.style.background = '#4ade80';
+                                        showNotification('Connection request sent successfully!');
+                                    } else {
+                                        this.innerHTML = '<i class="fas fa-user-plus"></i> Connect';
+                                        this.disabled = false;
+                                        showNotification('Failed to connect. Please try again.', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error connecting with traveler:', error);
+                                    this.innerHTML = '<i class="fas fa-user-plus"></i> Connect';
+                                    this.disabled = false;
+                                    showNotification('An error occurred. Please try again.', 'error');
+                                }
+                            });
+                        });
                         
                         // Animation for traveler cards
                         setTimeout(() => {
@@ -3012,17 +2991,25 @@
                             });
                         }, 100);
                         
-                    } catch (error) {
-                        console.error('Error fetching travelers:', error);
+                    } else {
+                        // Show a message if no travelers are found
                         travelersList.innerHTML = `
                             <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
-                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem; display: block;"></i>
-                                <p>Failed to load travelers. Please try again.</p>
+                                <i class="fas fa-user-slash" style="font-size: 2rem; color: var(--text-tertiary); margin-bottom: 1rem; display: block;"></i>
+                                <p>No travelers available for this location yet.</p>
                             </div>
                         `;
                     }
-                });
-            });
+                } catch (error) {
+                    console.error('Error loading location details:', error);
+                    travelersList.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem; display: block;"></i>
+                            <p>Failed to load location details. Please try again.</p>
+                        </div>
+                    `;
+                }
+            }
             
             // Back button functionality
             backButton.addEventListener('click', () => {
