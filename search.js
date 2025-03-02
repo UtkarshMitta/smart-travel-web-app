@@ -86,6 +86,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Don't search if query is too short
         if (query.length < 2) {
             searchLoading.style.display = 'none';
+            
+            // Clear search mode if input is cleared
+            if (query.length === 0) {
+                clearSearchMode();
+            }
             return;
         }
         
@@ -95,6 +100,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             performSmartSearch(query);
         }, 500);
     });
+    
+    /**
+     * Clear search mode and reset the UI
+     */
+    function clearSearchMode() {
+        const mapOverlay = document.querySelector('.map-overlay');
+        const searchResultsContainer = document.querySelector('.search-results-container');
+        
+        if (mapOverlay) {
+            mapOverlay.classList.remove('search-mode');
+        }
+        
+        if (searchResultsContainer) {
+            searchResultsContainer.style.display = 'none';
+        }
+    }
     
     // Close search results when clicking outside
     document.addEventListener('click', function(e) {
@@ -444,7 +465,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             searchResults.appendChild(explanationItem);
         }
         
-        // Add destination results
+        // Update map overlay UI with search results
+        updateMapOverlayWithSearchResults(destinations, query, keywordScores);
+        
+        // Add destination results to dropdown
         if (destinations.length > 0) {
             destinations.slice(0, 5).forEach(destination => {
                 // No need to find destination data again, we now include it in the search results
@@ -480,58 +504,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // Add click handler
                 resultItem.addEventListener('click', () => {
-                    // We would normally navigate to the destination page
-                    // First try clicking on the corresponding trending item
-                    const trendingItems = document.querySelectorAll('.trending-item');
-                    let clicked = false;
-                    
-                    trendingItems.forEach(item => {
-                        const itemTitle = item.querySelector('h4')?.textContent;
-                        if (itemTitle && destination.name.includes(itemTitle) || (itemTitle && itemTitle.includes(destination.name.split(',')[0]))) {
-                            item.click();
-                            clicked = true;
-                            
-                            // Close the search results
-                            searchResults.style.display = 'none';
-                            searchLoading.style.display = 'none';
-                        }
-                    });
-                    
-                    // If no trending item matched, try location cards
-                    if (!clicked) {
-                        const locationCards = document.querySelectorAll('.location-card');
-                        locationCards.forEach(card => {
-                            const cardName = card.querySelector('h3')?.textContent;
-                            if (cardName && (destination.name.includes(cardName) || cardName.includes(destination.name.split(',')[0]))) {
-                                setTimeout(() => {
-                                    // First switch to connect tab if needed
-                                    const connectTab = document.querySelector('[data-tab="connect"]');
-                                    if (connectTab && !connectTab.classList.contains('active')) {
-                                        connectTab.click();
-                                    }
-                                    
-                                    // Then click the card after tab transition
-                                    setTimeout(() => {
-                                        card.click();
-                                    }, 300);
-                                }, 100);
-                                
-                                clicked = true;
-                                
-                                // Close the search results
-                                searchResults.style.display = 'none';
-                                searchLoading.style.display = 'none';
-                            }
-                        });
-                    }
-                    
-                    // If no match found, just close the search results
-                    if (!clicked) {
-                        // Just show an alert for now
-                        alert(`You selected ${destination.name}. View details coming soon!`);
-                        searchResults.style.display = 'none';
-                        searchLoading.style.display = 'none';
-                    }
+                    handleDestinationSelection(destination);
                 });
                 
                 searchResults.appendChild(resultItem);
@@ -556,6 +529,153 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Show results container
         searchResults.style.display = 'block';
+    }
+    
+    /**
+     * Update the map overlay with search results
+     * @param {Array} destinations - Array of matching destinations
+     * @param {string} query - The original search query
+     * @param {Object} keywordScores - The keyword scores from Claude
+     */
+    function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
+        // Get the containers
+        const mapOverlay = document.querySelector('.map-overlay');
+        const searchResultsContainer = document.querySelector('.search-results-container');
+        const searchDestinationCards = document.getElementById('search-destination-cards');
+        
+        if (!mapOverlay || !searchResultsContainer || !searchDestinationCards) return;
+        
+        // Add search-mode class to the map overlay to trigger the CSS transition
+        mapOverlay.classList.add('search-mode');
+        
+        // Clear previous cards
+        searchDestinationCards.innerHTML = '';
+        
+        // Show the search results container
+        searchResultsContainer.style.display = 'block';
+        
+        // No results case
+        if (destinations.length === 0) {
+            const noResultsCard = document.createElement('div');
+            noResultsCard.className = 'destination-card no-results';
+            noResultsCard.innerHTML = `
+                <div class="destination-card-header">
+                    <div class="destination-card-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4 class="destination-card-title">No matches found</h4>
+                </div>
+                <div class="destination-card-description">Try different search terms or explore trending destinations</div>
+            `;
+            searchDestinationCards.appendChild(noResultsCard);
+            return;
+        }
+        
+        // Add destination cards for each search result
+        destinations.forEach(destination => {
+            const card = createSearchResultCard(destination);
+            searchDestinationCards.appendChild(card);
+        });
+    }
+    
+    /**
+     * Create a destination card for search results
+     * @param {Object} destination - The destination data
+     * @returns {HTMLElement} - The card element
+     */
+    function createSearchResultCard(destination) {
+        const card = document.createElement('div');
+        card.className = 'destination-card';
+        card.dataset.destinationId = destination.id;
+        
+        // Get icon based on top keyword or use the destination's icon
+        const topKeyword = destination.matchedKeywords[0]?.keyword || 'city';
+        const icon = destination.icon || getIconForKeyword(topKeyword);
+        
+        // Format matched keywords for display
+        const keywordText = destination.matchedKeywords
+            .map(k => k.keyword)
+            .join(', ');
+        
+        card.innerHTML = `
+            <div class="destination-card-header">
+                <div class="destination-card-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <h4 class="destination-card-title">${destination.name}</h4>
+            </div>
+            <div class="destination-card-description">${destination.description || ''}</div>
+            <div class="destination-card-stats">
+                <div class="destination-card-stat">
+                    <i class="fas fa-tag"></i> ${keywordText}
+                </div>
+            </div>
+        `;
+        
+        // Add click handler
+        card.addEventListener('click', () => {
+            handleDestinationSelection(destination);
+        });
+        
+        return card;
+    }
+    
+    /**
+     * Handle destination selection from search results
+     * @param {Object} destination - The selected destination
+     */
+    function handleDestinationSelection(destination) {
+        // First try clicking on the corresponding trending item
+        const trendingItems = document.querySelectorAll('.trending-item');
+        let clicked = false;
+        
+        trendingItems.forEach(item => {
+            const itemTitle = item.querySelector('h4')?.textContent;
+            if (itemTitle && destination.name.includes(itemTitle) || (itemTitle && itemTitle.includes(destination.name.split(',')[0]))) {
+                item.click();
+                clicked = true;
+                
+                // Close the search results
+                searchResults.style.display = 'none';
+                searchLoading.style.display = 'none';
+            }
+        });
+        
+        // If no trending item matched, try location cards
+        if (!clicked) {
+            const locationCards = document.querySelectorAll('.location-card');
+            locationCards.forEach(card => {
+                const cardName = card.querySelector('h3')?.textContent;
+                if (cardName && (destination.name.includes(cardName) || cardName.includes(destination.name.split(',')[0]))) {
+                    setTimeout(() => {
+                        // First switch to connect tab if needed
+                        const connectTab = document.querySelector('[data-tab="connect"]');
+                        if (connectTab && !connectTab.classList.contains('active')) {
+                            connectTab.click();
+                        }
+                        
+                        // Then click the card after tab transition
+                        setTimeout(() => {
+                            card.click();
+                        }, 300);
+                    }, 100);
+                    
+                    clicked = true;
+                    
+                    // Close the search results
+                    searchResults.style.display = 'none';
+                    searchLoading.style.display = 'none';
+                }
+            });
+        }
+        
+        // If no match found, just close the search results
+        if (!clicked) {
+            // Just show an alert for now
+            alert(`You selected ${destination.name}. View details coming soon!`);
+            searchResults.style.display = 'none';
+            searchLoading.style.display = 'none';
+        }
     }
     
     /**

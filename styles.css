@@ -360,7 +360,131 @@ h3 {
     position: absolute;
     inset: 0;
     background: radial-gradient(circle at center, transparent, var(--dark-surface));
-    pointer-events: none;
+    pointer-events: all;
+}
+
+.destinations-container {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    gap: 20px;
+    z-index: 20;
+}
+
+.search-results-container,
+.trending-container {
+    flex: 1;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    max-height: 200px;
+}
+
+.search-results-container {
+    flex: 2;
+    display: none; /* Initially hidden, will be shown when search is performed */
+}
+
+.trending-container {
+    flex: 1;
+}
+
+.section-title {
+    color: white;
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#search-destination-cards,
+#trending-destination-cards {
+    display: flex;
+    gap: 15px;
+    padding-bottom: 10px;
+    overflow-x: auto;
+}
+
+.destination-card {
+    min-width: 180px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.destination-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.destination-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.destination-card-icon {
+    width: 32px;
+    height: 32px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.destination-card-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin: 0;
+}
+
+.destination-card-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.destination-card-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.destination-card-stat {
+    color: var(--text-secondary);
+}
+
+/* Dynamic UI states */
+.search-mode .trending-container {
+    flex: 1;
+}
+
+.search-mode .search-results-container {
+    display: block;
+}
+
+/* Animation for transitions */
+.search-results-container,
+.trending-container {
+    transition: flex 0.4s ease;
 }
 
 .map-hotspots {
