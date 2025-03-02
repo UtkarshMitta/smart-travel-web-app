@@ -1692,3 +1692,324 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.head.appendChild(keyframes);
     }
 });
+
+/**
+ * Perform smart search using Claude AI to categorize the query
+ * @param {string} query - The search query
+ */
+async function performSmartSearch(query) {
+    // Show loading animation
+    searchLoading.style.display = 'block';
+    searchLoading.innerHTML = '';
+    
+    // Step 1: Starting search - Set search mode active early
+    updateLoadingStatus('Initializing smart search...', 10);
+    
+    // Add search mode class to discover section right away to start transition
+    const discoverSection = document.querySelector('#discover');
+    if (discoverSection) {
+        discoverSection.classList.add('search-active');
+    }
+    
+    // Step 2: Analyzing query
+    setTimeout(() => {
+        updateLoadingStatus('Analyzing your query with AI...', 30);
+    }, 500);
+    
+    try {
+        // Step 3: Call Claude API
+        setTimeout(() => {
+            updateLoadingStatus('Processing semantic meaning...', 50);
+        }, 1000);
+        
+        // Call Claude API to analyze the query
+        const keywordScores = await analyzeQueryWithClaude(query);
+        
+        // Step 4: Mapping to database keywords
+        setTimeout(() => {
+            updateLoadingStatus('Mapping to destination database...', 70);
+        }, 1500);
+        
+        // Find matching destinations based on keyword scores
+        const matchedDestinations = findMatchingDestinations(keywordScores);
+        
+        // Step 5: Finalizing results
+        setTimeout(() => {
+            updateLoadingStatus('Finalizing results...', 90);
+        }, 2000);
+        
+        // Display the results
+        setTimeout(() => {
+            displaySearchResults(matchedDestinations, query, keywordScores);
+            searchLoading.style.display = 'none';
+        }, 2500);
+        
+    } catch (error) {
+        console.error('Error in smart search:', error);
+        
+        // Show error in loading container
+        searchLoading.innerHTML = `
+            <div class="search-loading-text" style="color: var(--secondary);">Search Error</div>
+            <div class="search-loading-status">Unable to complete search. Please try again.</div>
+        `;
+        
+        // Hide error after 3 seconds
+        setTimeout(() => {
+            searchLoading.style.display = 'none';
+            clearSearchMode(); // Clear search mode on error
+        }, 3000);
+    }
+}
+
+/**
+ * Clear search mode and reset the UI
+ */
+function clearSearchMode() {
+    // Find discover section and remove search-active class
+    const discoverSection = document.querySelector('#discover');
+    if (discoverSection) {
+        discoverSection.classList.remove('search-active');
+    }
+    
+    // Hide search results container
+    const searchResultsContainer = document.querySelector('.search-results-container');
+    if (searchResultsContainer) {
+        searchResultsContainer.classList.remove('active');
+        // Hide after animation completes
+        setTimeout(() => {
+            searchResultsContainer.style.display = 'none';
+        }, 400);
+    }
+    
+    // Restore trending list to center position
+    const trendingList = document.querySelector('.trending-list');
+    if (trendingList) {
+        trendingList.style.transform = '';
+    }
+}
+
+/**
+ * Update the search results display
+ * @param {Array} destinations - Array of matching destinations
+ * @param {string} query - The original search query
+ * @param {Object} keywordScores - The keyword scores from Claude
+ */
+function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
+    // Get the containers
+    const discoverSection = document.querySelector('#discover');
+    const discoverGrid = document.querySelector('.discover-grid');
+    
+    // Remove any existing search results containers
+    const existingContainer = document.querySelector('.search-results-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    // Create new search results container
+    const searchResultsContainer = document.createElement('div');
+    searchResultsContainer.className = 'search-results-container';
+    const searchDestinationCards = document.createElement('div');
+    searchDestinationCards.id = 'search-destination-cards';
+    searchResultsContainer.appendChild(searchDestinationCards);
+    
+    // Add the new container to the discover grid
+    discoverGrid.prepend(searchResultsContainer);
+    
+    // Ensure search-active class is applied to discover section
+    if (discoverSection) {
+        discoverSection.classList.add('search-active');
+    }
+    
+    // Clear previous cards
+    searchDestinationCards.innerHTML = '';
+    
+    // Show the search results container with active class
+    searchResultsContainer.style.display = 'block';
+    
+    // Use setTimeout to trigger the transition after the container is added to the DOM
+    setTimeout(() => {
+        searchResultsContainer.classList.add('active');
+    }, 10);
+    
+    // No results case
+    if (destinations.length === 0) {
+        const noResultsCard = document.createElement('div');
+        noResultsCard.className = 'destination-card no-results';
+        noResultsCard.innerHTML = `
+            <div class="destination-card-header">
+                <div class="destination-card-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h4 class="destination-card-title">No matches found</h4>
+            </div>
+            <div class="destination-card-description">Try different search terms or explore trending destinations</div>
+        `;
+        searchDestinationCards.appendChild(noResultsCard);
+        return;
+    }
+    
+    // Add destination cards for each search result
+    destinations.forEach(destination => {
+        const card = createSearchResultCard(destination);
+        searchDestinationCards.appendChild(card);
+    });
+}
+
+/**
+ * Display search results in the results container
+ * @param {Array} destinations - Array of matching destinations
+ * @param {string} query - The original search query
+ * @param {Object} keywordScores - The keyword scores from Claude
+ */
+function displaySearchResults(destinations, query, keywordScores) {
+    // Log detailed search results for debugging
+    logSearchResults(destinations, query);
+    
+    // Clear previous results
+    searchResults.innerHTML = '';
+    
+    // Get top keywords for explanation
+    const topKeywords = Object.entries(keywordScores)
+        .sort((a, b) => b[1] - a[1])
+        .filter(entry => entry[1] > 5)
+        .slice(0, 3)
+        .map(entry => entry[0]);
+    
+    // Create a dynamic header explaining the search results
+    const searchHeader = document.createElement('div');
+    searchHeader.className = 'search-header';
+    searchHeader.innerHTML = `
+        <div class="search-header-title">
+            <i class="fas fa-search-location"></i> Search Results
+            <span class="search-query">${query}</span>
+        </div>
+    `;
+    searchResults.appendChild(searchHeader);
+    
+    // Show explanation if we have top keywords
+    if (topKeywords.length > 0) {
+        const explanationItem = document.createElement('div');
+        explanationItem.className = 'search-result-item search-explanation';
+        explanationItem.innerHTML = `
+            <div class="search-result-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="search-result-info">
+                <div class="search-result-title">AI-Powered Search</div>
+                <div class="search-result-description">
+                    Your query matches best with: 
+                    <div class="keyword-tags">
+                        ${topKeywords.map(keyword => 
+                            `<span class="search-result-match"><i class="fas fa-tag"></i> ${keyword}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        searchResults.appendChild(explanationItem);
+    }
+    
+    // Update map overlay UI with search results
+    updateMapOverlayWithSearchResults(destinations, query, keywordScores);
+    
+    // Add destination results to dropdown with staggered animation
+    if (destinations.length > 0) {
+        destinations.slice(0, 5).forEach((destination, index) => {
+            // No need to find destination data again, we now include it in the search results
+            const destData = destination;
+            
+            const resultItem = document.createElement('div');
+            resultItem.className = 'search-result-item';
+            resultItem.style.animationDelay = `${index * 0.05}s`;
+            
+            // Get icon based on top keyword or use the destination's icon
+            const topKeyword = destination.matchedKeywords[0]?.keyword || 'city';
+            const icon = destData.icon || getIconForKeyword(topKeyword);
+            
+            // Format matched keywords for display with more visual appeal
+            const keywordText = destination.matchedKeywords
+                .map(k => {
+                    // Use different styling for high-scoring matches
+                    const highScore = k.score > 8;
+                    return `<span class="search-result-match ${highScore ? 'high-score' : ''}">
+                        ${k.keyword}${highScore ? ' <i class="fas fa-star"></i>' : ''}
+                    </span>`;
+                })
+                .join('');
+            
+            // Create a confidence score indicator based on overall match score
+            const confidenceScore = Math.min(100, Math.round((destination.score / 30) * 100));
+            const confidenceClass = confidenceScore > 80 ? 'high' : (confidenceScore > 50 ? 'medium' : 'low');
+            
+            // Create HTML for the result item with enhanced visual display
+            resultItem.innerHTML = `
+                <div class="search-result-icon" data-region="${destData.region || 'unknown'}">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="search-result-info">
+                    <div class="search-result-title">${destination.name}
+                        <span class="confidence-score ${confidenceClass}">
+                            <i class="fas fa-chart-line"></i> ${confidenceScore}%
+                        </span>
+                    </div>
+                    <div class="search-result-description">
+                        ${destData.description ? 
+                            `<div class="destination-description">${destData.description.substring(0, 60)}${destData.description.length > 60 ? '...' : ''}</div>` 
+                            : ''}
+                        <div class="keyword-container">
+                            ${keywordText}
+                        </div>
+                        ${destData.region ? 
+                            `<div class="destination-region"><i class="fas fa-map-marker-alt"></i> ${destData.region}</div>` 
+                            : ''}
+                    </div>
+                </div>
+                ${destData.image ? 
+                    `<div class="search-result-image" style="background-image: url('${destData.image}');"></div>` 
+                    : ''}
+            `;
+            
+            // Add click handler with visual feedback
+            resultItem.addEventListener('click', () => {
+                // Add selection effect
+                resultItem.classList.add('selecting');
+                
+                // Handle the actual selection after a short delay for better visual feedback
+                setTimeout(() => {
+                    handleDestinationSelection(destination);
+                    resultItem.classList.remove('selecting');
+                }, 300);
+            });
+            
+            searchResults.appendChild(resultItem);
+        });
+    } else {
+        // No results found with improved styling
+        const noResultsItem = document.createElement('div');
+        noResultsItem.className = 'search-result-item no-results';
+        noResultsItem.innerHTML = `
+            <div class="search-result-icon">
+                <i class="fas fa-search-minus"></i>
+            </div>
+            <div class="search-result-info">
+                <div class="search-result-title">No matches found</div>
+                <div class="search-result-description">
+                    <p>We couldn't find destinations matching "${query}"</p>
+                    <div class="suggestions">
+                        <p>Try:</p>
+                        <ul>
+                            <li>Using broader keywords (e.g., "beach" instead of specific beaches)</li>
+                            <li>Checking popular destinations in the trending section</li>
+                            <li>Searching by region (e.g., "Asia", "Europe")</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        searchResults.appendChild(noResultsItem);
+    }
+    
+    // Show results container with animation
+    searchResults.style.display = 'block';
+    searchResults.style.animation = 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+}
