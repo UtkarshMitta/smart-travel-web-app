@@ -23,6 +23,19 @@ const API = {
     },
     
     /**
+     * Send an image to Claude API for location identification
+     * @param {string} imageData - Base64 encoded image data
+     * @param {string} description - User's description of the image
+     * @returns {Promise} - Promise that resolves with the API response
+     */
+    identifyLocationFromImage: function(imageData, description) {
+        return this.post('identifyLocation', { 
+            imageData: imageData,
+            description: description 
+        });
+    },
+    
+    /**
      * Make a GET request to the API
      * @param {string} action - The API action to call
      * @param {object} params - Additional parameters
