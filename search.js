@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 ]
             };
             
+
             // Use our API service to call the backend callClaudeApi function
             const response = await API.callClaudeApi(requestData);
             
