@@ -20,13 +20,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                 let keywords = [];
                 
                 // Try to parse the Keywords field from JSON string
-                if (dest.Keywords) {
+                if (dest.keywords) {
                     try {
                         // Check if it's already an array or needs parsing from string
                         if (typeof dest.Keywords === 'string') {
-                            keywords = JSON.parse(dest.Keywords);
-                        } else if (Array.isArray(dest.Keywords)) {
-                            keywords = dest.Keywords;
+                            keywords = JSON.parse(dest.keywords);
+                        } else if (Array.isArray(dest.keywords)) {
+                            keywords = dest.keywords;
                         }
                         
                         // Add each keyword to our unique keywords set
