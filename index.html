@@ -810,6 +810,8 @@
     #discover.search-active .trending-list {
         transform: translateX(30%) translateY(20px);
         max-width: 500px;
+        opacity: 0.9;
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     
     .search-results-container {
@@ -826,6 +828,17 @@
     /* Ensure dropdown search results also display properly */
     .search-results {
         z-index: 100;
+    }
+    
+    /* Improve search transition */
+    .search-bar:focus-within {
+        transform: scale(1.02);
+    }
+    
+    /* Improved text rendering */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 </style>
 </body>

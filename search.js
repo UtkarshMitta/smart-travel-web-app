@@ -116,11 +116,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Error fetching destinations:', error);
         // Fallback to some default destinations and keywords if there's an error
         DESTINATIONS = [
-            { id: 'D-001', name: 'Bali, Indonesia', keywords: ['beach', 'island', 'tropical', 'cultural', 'summer', 'photography'], icon: 'fa-umbrella-beach' },
-            { id: 'D-002', name: 'Patagonia, Chile', keywords: ['mountain', 'adventure', 'nature', 'photography'], icon: 'fa-mountain' },
-            { id: 'D-003', name: 'Kyoto, Japan', keywords: ['cultural', 'historical', 'city', 'photography', 'food'], icon: 'fa-landmark' },
-            { id: 'D-004', name: 'Lisbon, Portugal', keywords: ['city', 'historical', 'food', 'summer', 'budget'], icon: 'fa-city' },
-            { id: 'D-005', name: 'Santorini, Greece', keywords: ['island', 'beach', 'romantic', 'summer', 'photography'], icon: 'fa-water' }
         ];
         
         // Extract unique keywords from our fallback destinations

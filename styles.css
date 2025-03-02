@@ -1,15 +1,33 @@
 :root {
-    --primary: #0078ff;
-    --primary-glow: rgba(0, 120, 255, 0.2);
-    --secondary: #ff4e50;
-    --accent: #7b61ff;
-    --dark-bg: #080808;
-    --dark-surface: #111111;
-    --dark-surface-2: #1a1a1a;
+    /* New refined color palette */
+    --primary: #03847B;     /* Rich teal instead of standard blue */
+    --primary-glow: rgba(3, 132, 123, 0.15);
+    --secondary: #FF5E5E;   /* Slightly refined red */
+    --accent: #5F2EEA;      /* Deep purple as accent */
+    --dark-bg: #0A0E14;    /* Slightly less harsh black with subtle blue tint */
+    --dark-surface: #121820; /* First tier surface */
+    --dark-surface-2: #1A222C; /* Second tier surface */
     --text: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --text-tertiary: rgba(255, 255, 255, 0.5);
-    --border: rgba(255, 255, 255, 0.1);
+    --text-secondary: rgba(255, 255, 255, 0.8); /* Better contrast */
+    --text-tertiary: rgba(255, 255, 255, 0.6);  /* Better contrast */
+    --border: rgba(255, 255, 255, 0.08);  /* Subtle dividers */
+    
+    /* System tokens */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.14), 0 3px 6px rgba(0, 0, 0, 0.1);
+    
+    /* Spacing system */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    
+    /* Border radius */
+    --radius-sm: 6px;
+    --radius-md: 10px; 
+    --radius-lg: 16px;
 }
 
 * {
@@ -23,6 +41,8 @@ body {
     background-color: var(--dark-bg);
     color: var(--text);
     overflow-x: hidden;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
 }
 
 #app {
@@ -33,16 +53,17 @@ body {
 
 /* Header Styles */
 header {
-    backdrop-filter: blur(10px);
-    background: rgba(8, 8, 8, 0.8);
+    backdrop-filter: blur(8px);
+    background: rgba(10, 14, 20, 0.85);
     border-bottom: 1px solid var(--border);
     position: fixed;
     width: 100%;
     z-index: 1000;
-    padding: 1rem 2rem;
+    padding: var(--space-md) var(--space-xl);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: var(--shadow-sm);
 }
 
 .logo {
@@ -85,6 +106,8 @@ header {
     justify-content: center;
     color: white;
     font-weight: 600;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Main Content Styles */
@@ -104,22 +127,25 @@ main {
 
 .tabs {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
     background: var(--dark-surface);
-    padding: 0.5rem;
-    border-radius: 12px;
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
     position: relative;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .tab {
-    padding: 0.8rem 1.5rem;
+    padding: var(--space-sm) var(--space-lg);
     cursor: pointer;
     position: relative;
     z-index: 10;
     font-weight: 500;
     color: var(--text-secondary);
-    transition: color 0.3s ease;
-    border-radius: 8px;
+    transition: color 0.25s ease;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.01em;
 }
 
 .tab.active {
@@ -130,11 +156,12 @@ main {
     position: absolute;
     background: var(--dark-surface-2);
     height: calc(100% - 10px);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     top: 5px;
     left: 5px;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Content Sections */
@@ -156,18 +183,20 @@ main {
 }
 
 h2 {
-    font-size: 1.8rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.5px;
+    margin-bottom: var(--space-lg);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 h3 {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 1rem;
-    letter-spacing: -0.3px;
+    margin-bottom: var(--space-md);
+    letter-spacing: -0.01em;
     color: var(--text-secondary);
+    line-height: 1.3;
 }
 
 /* Discover Tab */
@@ -182,22 +211,24 @@ h3 {
 }
 
 .search-input {
-    background: rgba(17, 17, 17, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem 1.2rem 3rem;
+    background: rgba(18, 24, 32, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.5rem 1.1rem 3rem;
     width: 100%;
     color: var(--text);
     font-size: 1rem;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-md);
+    letter-spacing: 0.01em;
 }
 
 .search-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 4px 20px rgba(0, 120, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(3, 132, 123, 0.2);
     outline: none;
+    background: rgba(18, 24, 32, 0.85);
 }
 
 .search-icon {
@@ -217,19 +248,19 @@ h3 {
 
 .search-results {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100% + 12px);
     left: 0;
     right: 0;
-    background: rgba(17, 17, 17, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: rgba(18, 24, 32, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
     max-height: 500px;
     overflow-y: auto;
     z-index: 100;
     display: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(12px);
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes fadeInUp {
@@ -244,22 +275,22 @@ h3 {
 }
 
 .search-result-item {
-    padding: 1.2rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: var(--space-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
     display: flex;
     align-items: center;
-    gap: 1.2rem;
+    gap: var(--space-lg);
     position: relative;
     overflow: hidden;
-    animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .search-result-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .search-result-item:active {
@@ -319,7 +350,8 @@ h3 {
     margin-bottom: 0.3rem;
     font-size: 1rem;
     letter-spacing: -0.01em;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
+    line-height: 1.3;
 }
 
 .search-result-item:hover .search-result-title {
@@ -331,6 +363,7 @@ h3 {
     color: var(--text-secondary);
     max-width: calc(100% - 100px);
     line-height: 1.5;
+    letter-spacing: 0.01em;
 }
 
 .search-result-match {
@@ -516,16 +549,16 @@ h3 {
     max-width: 800px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 20px;
-    border-radius: 16px;
-    background-color: rgba(17, 17, 17, 0.85);
-    backdrop-filter: blur(16px);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    background-color: rgba(18, 24, 32, 0.85);
+    backdrop-filter: blur(12px);
     max-height: 260px;
     display: none; /* Initially hidden */
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-lg);
+    transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     transform: translateY(20px);
     opacity: 0;
     position: absolute;
@@ -587,13 +620,13 @@ h3 {
 
 .destination-card {
     min-width: 230px;
-    background: linear-gradient(145deg, rgba(26, 26, 26, 0.9), rgba(17, 17, 17, 0.9));
-    border-radius: 14px;
-    padding: 18px;
+    background: linear-gradient(145deg, rgba(26, 34, 44, 0.85), rgba(18, 24, 32, 0.85));
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.04);
     transform-origin: center bottom;
     transform: translateZ(0);
     position: relative;
@@ -601,9 +634,9 @@ h3 {
 }
 
 .destination-card:hover {
-    transform: translateY(-8px) scale(1.02) translateZ(20px);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 120, 255, 0.1);
-    border-color: rgba(0, 120, 255, 0.2);
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(3, 132, 123, 0.15);
 }
 
 .destination-card:after {
@@ -936,9 +969,9 @@ h3 {
 .ripple-effect {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2); /* Slightly more subtle */
     transform: scale(0);
-    animation: ripple 0.6s linear;
+    animation: ripple 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); /* Improved easing */
     pointer-events: none;
 }
 
@@ -1149,17 +1182,20 @@ h3 {
 
 .location-card {
     background: var(--dark-surface);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     display: flex;
     height: 110px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .location-card:hover {
-    transform: translateX(5px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    transform: translateX(5px) translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(3, 132, 123, 0.1);
 }
 
 .location-image {
@@ -1439,10 +1475,12 @@ h3 {
 
 .chat-container {
     background: var(--dark-surface);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
     height: calc(80vh - 8rem);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: var(--shadow-md);
 }
 
 .chat-header {
@@ -1482,7 +1520,7 @@ h3 {
 }
 
 .message {
-    max-width: 80%;
+    max-width: 75%;
 }
 
 .message.received {
@@ -1495,16 +1533,18 @@ h3 {
 
 .message-content {
     background: var(--dark-surface-2);
-    padding: 1rem;
-    border-radius: 16px;
-    border-bottom-left-radius: 4px;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    border-bottom-left-radius: var(--radius-sm);
     position: relative;
+    box-shadow: var(--shadow-sm);
 }
 
 .message.sent .message-content {
     background: var(--primary);
-    border-radius: 16px;
-    border-bottom-right-radius: 4px;
+    border-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-sm);
+    box-shadow: 0 2px 8px rgba(3, 132, 123, 0.2);
 }
 
 .message-sender {
@@ -1533,33 +1573,41 @@ h3 {
 .chat-input {
     flex: 1;
     background: var(--dark-surface-2);
-    border: none;
-    padding: 0.8rem 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.9rem 1.3rem;
     border-radius: 100px;
     color: var(--text);
     font-size: 0.9rem;
+    transition: all 0.2s ease;
+    letter-spacing: 0.01em;
 }
 
 .chat-input:focus {
     outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px rgba(3, 132, 123, 0.1);
+    background: rgba(26, 34, 44, 0.9);
 }
 
 .chat-send {
     background: var(--primary);
     color: white;
     border: none;
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
 .chat-send:hover {
-    background: #0066e0;
+    background: #039e93;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(3, 132, 123, 0.2);
 }
 
 .camera-tool {
@@ -1575,14 +1623,16 @@ h3 {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 5px 20px rgba(0, 120, 255, 0.4);
-    transition: transform 0.3s ease;
+    box-shadow: 0 5px 15px rgba(3, 132, 123, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     font-size: 1.3rem;
     z-index: 100;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .camera-tool:hover {
-    transform: scale(1.1);
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 8px 20px rgba(3, 132, 123, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 /* Profile Overlay */
@@ -1592,8 +1642,8 @@ h3 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
+    background: rgba(10, 14, 20, 0.75);
+    backdrop-filter: blur(8px);
     z-index: 2000;
     display: flex;
     align-items: center;
@@ -1610,7 +1660,7 @@ h3 {
 
 .profile-container {
     background: var(--dark-surface);
-    border-radius: 20px;
+    border-radius: var(--radius-lg);
     width: 90%;
     max-width: 900px;
     height: 85vh;
@@ -1618,9 +1668,10 @@ h3 {
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.04);
     transform: translateY(20px);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .profile-overlay.active .profile-container {
@@ -1782,17 +1833,19 @@ label {
     width: 100%;
     background: var(--dark-surface-2);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    padding: 0.9rem 1rem;
     color: var(--text);
     font-size: 1rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    letter-spacing: 0.01em;
 }
 
 .form-input:focus, .form-textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(0, 120, 255, 0.2);
+    box-shadow: 0 0 0 2px rgba(3, 132, 123, 0.15);
+    background: rgba(26, 34, 44, 0.9);
 }
 
 .form-textarea {
@@ -1824,15 +1877,19 @@ label {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
+    padding: 0.9rem 1.6rem;
+    border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    letter-spacing: 0.01em;
 }
 
 .save-btn:hover {
-    background: #0066e0;
+    background: #039e93;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 /* Checkbox and Toggle Styles */
@@ -2295,15 +2352,15 @@ label {
 /* Animations */
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(0, 120, 255, 0.4);
+        box-shadow: 0 0 0 0 rgba(3, 132, 123, 0.4);
         transform: translate(-50%, -50%) scale(1);
     }
     50% {
-        box-shadow: 0 0 0 10px rgba(0, 120, 255, 0);
+        box-shadow: 0 0 0 10px rgba(3, 132, 123, 0);
         transform: translate(-50%, -50%) scale(1.2);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(0, 120, 255, 0);
+        box-shadow: 0 0 0 0 rgba(3, 132, 123, 0);
         transform: translate(-50%, -50%) scale(1);
     }
 }
