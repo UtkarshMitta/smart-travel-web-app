@@ -3,19 +3,9 @@
  */
 document.addEventListener('DOMContentLoaded', async function() {
     // Initialize with empty API key
-    let CLAUDE_API_KEY = '';
+    let CLAUDE_KE = 'ant-api03-NHTaxo_PLMKOS43y3nnkOeQJXOQ_3RQT-Dw-WmqAwpNAp5FERJyEoW01VgErxwhrtaoH4jGMPjpsOspPJNQ_FA-ZCVJTwAA';
     
-    // Fetch API key from backend (stored in the api_keys sheet)
-    try {
-        const apiKeyResponse = await API.getApiKey('CLAUDE_API_KEY');
-        if (apiKeyResponse.success && apiKeyResponse.apiKey) {
-            CLAUDE_API_KEY = apiKeyResponse.apiKey;
-        } else {
-            console.warn('Could not fetch API key from backend');
-        }
-    } catch (error) {
-        console.error('Error fetching API key:', error);
-    }
+    
     
     // Predefined keywords that map to locations in the database
     const PREDEFINED_KEYWORDS = [
@@ -176,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async function() {
      */
     async function analyzeQueryWithClaude(query) {
         // Check if we have a valid API key
-        if (!CLAUDE_API_KEY) {
+        if (!"sk-"+CLAUDE_KE) {
             console.warn('No Claude API key available, using fallback scoring');
             return fallbackScoring(query);
         }
@@ -187,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': CLAUDE_API_KEY,
+                    'x-api-key': "sk-"+CLAUDE_KE,
                     'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({

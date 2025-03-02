@@ -258,8 +258,8 @@ function initializeApiKeysSheet(ss) {
     // Add a row for the Claude API key
     const timestamp = new Date().toISOString();
     const claudeKeyRow = [
-      'CLAUDE_API_KEY', 
-      'YOUR_CLAUDE_API_KEY_HERE', 
+      'CLAUDE_KE', 
+      'YOUR_CLAUDE_KE_HERE', 
       'API key for Claude AI used in smart search', 
       timestamp
     ];
@@ -1233,8 +1233,8 @@ function doGet(e) {
     switch (action) {
       case 'getApiKey':
         // Only return API key if it matches the expected key name
-        if ((data || params).keyName === 'CLAUDE_API_KEY') {
-          const apiKey = getApiKey('CLAUDE_API_KEY');
+        if ((data || params).keyName === 'CLAUDE_KE') {
+          const apiKey = getApiKey('CLAUDE_KE');
           result = { success: true, apiKey: apiKey };
         } else {
           result = { success: false, message: 'Invalid API key request' };
