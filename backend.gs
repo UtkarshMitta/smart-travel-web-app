@@ -9,7 +9,8 @@ const CONFIG = {
     DESTINATIONS: 'Destinations',
     MESSAGES: 'Messages',
     CHANNELS: 'Channels',
-    INTERESTS: 'Interests'
+    INTERESTS: 'Interests',
+    API_KEYS: 'api_keys'  // Sheet for storing API keys
   },
   EMAIL_SETTINGS: {
     SENDER_NAME: 'Cluster - Travel Platform',
@@ -52,6 +53,9 @@ function initializeDatabase() {
   
   // Initialize Interests sheet
   initializeInterestsSheet(ss);
+  
+  // Initialize API Keys sheet
+  initializeApiKeysSheet(ss);
   
   return { success: true, message: 'Database initialized successfully' };
 }
@@ -229,6 +233,38 @@ function initializeInterestsSheet(ss) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
     sheet.setFrozenRows(1);
+  }
+  
+  return sheet;
+}
+
+/**
+ * Initialize API Keys sheet
+ */
+function initializeApiKeysSheet(ss) {
+  let sheet = ss.getSheetByName(CONFIG.SHEETS.API_KEYS);
+  
+  if (!sheet) {
+    sheet = ss.insertSheet(CONFIG.SHEETS.API_KEYS);
+    
+    const headers = [
+      'KeyName', 'ApiKey', 'Description', 'LastUpdated'
+    ];
+    
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    
+    // Add a row for the Claude API key
+    const timestamp = new Date().toISOString();
+    const claudeKeyRow = [
+      'CLAUDE_API_KEY', 
+      'YOUR_CLAUDE_API_KEY_HERE', 
+      'API key for Claude AI used in smart search', 
+      timestamp
+    ];
+    
+    sheet.appendRow(claudeKeyRow);
   }
   
   return sheet;
@@ -1134,6 +1170,37 @@ function testerLogin(params) {
   }
 }
 
+/**
+ * Get API key from the API Keys sheet
+ * @param {string} keyName - Name of the API key to retrieve
+ * @returns {string} - API key value or empty string if not found
+ */
+function getApiKey(keyName) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEETS.API_KEYS);
+    
+    if (!sheet) {
+      console.error('API Keys sheet not found');
+      return '';
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] === keyName) {
+        return data[i][1] || '';
+      }
+    }
+    
+    console.error('API key not found:', keyName);
+    return '';
+  } catch (error) {
+    console.error('Error retrieving API key:', error);
+    return '';
+  }
+}
+
 /* ===== WEB APP ENDPOINTS ===== */
 
 /**
@@ -1164,6 +1231,15 @@ function doGet(e) {
     
     // Execute the action
     switch (action) {
+      case 'getApiKey':
+        // Only return API key if it matches the expected key name
+        if ((data || params).keyName === 'CLAUDE_API_KEY') {
+          const apiKey = getApiKey('CLAUDE_API_KEY');
+          result = { success: true, apiKey: apiKey };
+        } else {
+          result = { success: false, message: 'Invalid API key request' };
+        }
+        break;
       case 'signup':
         result = createUser(data || params);
         break;

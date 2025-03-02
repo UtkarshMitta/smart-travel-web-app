@@ -5,6 +5,15 @@ const API = {
     BASE_URL: 'https://script.google.com/macros/s/AKfycbzy-16q66fpIfhYci9L8j0iHh53HNoc9_yU5K4BJzlRfeg2hCxKrC35pWQnK7YaBVnXgA/exec',
     
     /**
+     * Get API key from the backend
+     * @param {string} keyName - The name of the API key to retrieve
+     * @returns {Promise} - Promise that resolves with the API key
+     */
+    getApiKey: function(keyName) {
+        return this.get('getApiKey', { keyName: keyName });
+    },
+    
+    /**
      * Make a GET request to the API
      * @param {string} action - The API action to call
      * @param {object} params - Additional parameters
