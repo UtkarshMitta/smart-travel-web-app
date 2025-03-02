@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
       // Send the image and description to the backend.
       // Update the URL if your endpoint is different.
-      fetch('https://script.google.com/macros/s/AKfycbzCuzX3RgjMuz6OsX1f3mEunxbuxK2xkwOMKdTDYJvVGfKNIcaLtXh-hN008SMn_wvgpQ/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbwGeRSDz1P4RGbrXh2rHYGlC0XpHDmmekb6LUlWxOIFHYm2ybfxJMN-xXncINfWWDNSFQ/execs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
