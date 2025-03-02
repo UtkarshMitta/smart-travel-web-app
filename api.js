@@ -2,7 +2,7 @@
  * API Service for communicating with the backend
  */
 const API = {
-    BASE_URL: 'https://script.google.com/macros/s/AKfycbzy-16q66fpIfhYci9L8j0iHh53HNoc9_yU5K4BJzlRfeg2hCxKrC35pWQnK7YaBVnXgA/exec',
+    BASE_URL: 'https://script.google.com/macros/s/AKfycbzFXCo8N4pnmRbF4Kp1pbgGr_y5av4UAFfIietDhP8OAKbVJ48hIdD3vBxR0o10XUnIUQ/exec',
     
     /**
      * Get API key from the backend
