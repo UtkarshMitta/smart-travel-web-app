@@ -162,7 +162,7 @@ function initializeDestinationsSheet(ss) {
     
     const headers = [
       'DestinationID', 'Name', 'Country', 'Region', 'Description', 'ImageURL', 
-      'TravellerCount', 'PopularDates', 'TrendingPercentage', 'FeaturedStatus', 'Icon'
+      'TravellerCount', 'PopularDates', 'TrendingPercentage', 'FeaturedStatus', 'Icon', 'Keywords'
     ];
     
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -1579,11 +1579,11 @@ function seedSampleData() {
     // Create sample destinations
     const destSheet = ss.getSheetByName(CONFIG.SHEETS.DESTINATIONS);
     const destinations = [
-      ['D-001', 'Bali', 'Indonesia', 'Southeast Asia', "Southeast Asia's tropical paradise", 'bali.jpg', 248, 'Apr - Jun 2025', 15, 'featured', 'fa-umbrella-beach'],
-      ['D-002', 'Patagonia', 'Chile', 'South America', 'Epic landscapes and outdoor adventures', 'patagonia.jpg', 186, 'Dec - Feb 2025', 22, 'featured', 'fa-mountain'],
-      ['D-003', 'Lisbon', 'Portugal', 'Europe', "Europe's sunniest capital city", 'lisbon.jpg', 312, 'Jun - Aug 2025', 18, 'featured', 'fa-city'],
-      ['D-004', 'Kyoto', 'Japan', 'Asia', 'Ancient temples and cultural heritage', 'kyoto.jpg', 205, 'Mar - May 2025', 12, 'featured', 'fa-landmark'],
-      ['D-005', 'Santorini', 'Greece', 'Europe', 'Iconic white and blue Aegean views', 'santorini.jpg', 274, 'May - Sep 2025', 20, 'featured', 'fa-water']
+      ['D-001', 'Bali', 'Indonesia', 'Southeast Asia', "Southeast Asia's tropical paradise", 'bali.jpg', 248, 'Apr - Jun 2025', 15, 'featured', 'fa-umbrella-beach', JSON.stringify(['beach', 'island', 'tropical', 'cultural', 'summer', 'photography'])],
+      ['D-002', 'Patagonia', 'Chile', 'South America', 'Epic landscapes and outdoor adventures', 'patagonia.jpg', 186, 'Dec - Feb 2025', 22, 'featured', 'fa-mountain', JSON.stringify(['mountain', 'adventure', 'nature', 'photography'])],
+      ['D-003', 'Lisbon', 'Portugal', 'Europe', "Europe's sunniest capital city", 'lisbon.jpg', 312, 'Jun - Aug 2025', 18, 'featured', 'fa-city', JSON.stringify(['city', 'historical', 'food', 'summer', 'budget'])],
+      ['D-004', 'Kyoto', 'Japan', 'Asia', 'Ancient temples and cultural heritage', 'kyoto.jpg', 205, 'Mar - May 2025', 12, 'featured', 'fa-landmark', JSON.stringify(['cultural', 'historical', 'city', 'photography', 'food'])],
+      ['D-005', 'Santorini', 'Greece', 'Europe', 'Iconic white and blue Aegean views', 'santorini.jpg', 274, 'May - Sep 2025', 20, 'featured', 'fa-water', JSON.stringify(['island', 'beach', 'romantic', 'summer', 'photography'])]
     ];
     destinations.forEach(dest => destSheet.appendRow(dest));
     

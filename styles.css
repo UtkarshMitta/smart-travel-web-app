@@ -215,14 +215,18 @@ h3 {
     padding: 1rem;
     border-bottom: 1px solid var(--border);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 1rem;
+    position: relative;
+    overflow: hidden;
 }
 
 .search-result-item:hover {
     background: var(--dark-surface-2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .search-result-item:last-child {
@@ -242,6 +246,22 @@ h3 {
     flex-shrink: 0;
 }
 
+.search-result-image {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 80px;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.search-result-item:hover .search-result-image {
+    opacity: 0.8;
+}
+
 .search-result-info {
     flex: 1;
 }
@@ -254,11 +274,26 @@ h3 {
 .search-result-description {
     font-size: 0.85rem;
     color: var(--text-secondary);
+    max-width: calc(100% - 90px);
 }
 
 .search-result-match {
     color: var(--primary);
     font-weight: 500;
+}
+
+.destination-description {
+    margin-bottom: 0.3rem;
+    font-style: italic;
+}
+
+.destination-region {
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    opacity: 0.8;
 }
 
 .search-loading {
