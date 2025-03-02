@@ -392,10 +392,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                         <div class="traveler-header">
                             <div class="traveler-header">
         <div class="traveler-header">
-        <div class="traveler-avatar" style="width: 45px; height: 45px; overflow: hidden;">
+        <div class="traveler-avatar">
             ${traveler.avatar ? 
-              `<img src="${traveler.avatar}" alt="${traveler.name}'s avatar" style="width: 45px; height: 45px; object-fit: cover; border-radius: 50%;">` : 
-              `<div class="avatar-initial" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background-color: #e0e0e0; border-radius: 50%; font-size: 18px;">${traveler.avatarFallback}</div>`
+              `<img src="${traveler.avatar}" alt="${traveler.name}'s avatar">` : 
+              `<div class="avatar-initial">${traveler.avatarFallback}</div>`
             }
         </div>
                             <div>
