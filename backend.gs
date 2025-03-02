@@ -1599,3 +1599,111 @@ function seedSampleData() {
     return { success: false, message: 'Error creating sample data: ' + error.message };
   }
 }
+
+function callClaudeApi(requestData) {
+
+  try {
+
+    // Your API key (consider moving this to the API_KEYS sheet in production)
+
+    const apiKey = "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";
+
+    
+
+    // Set default model if not provided
+
+    if (!requestData.model) {
+
+      requestData.model = "claude-3-7-sonnet-20250219";
+
+    }
+
+    
+
+    // Set default max_tokens if not provided
+
+    if (!requestData.max_tokens) {
+
+      requestData.max_tokens = 1024;
+
+    }
+
+    
+
+    // Make the request to Claude API
+
+    const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+
+      method: 'post',
+
+      contentType: 'application/json',
+
+      headers: {
+
+        'x-api-key': apiKey,
+
+        'anthropic-version': '2023-06-01'
+
+      },
+
+      payload: JSON.stringify(requestData),
+
+      muteHttpExceptions: true
+
+    });
+
+    
+
+    // Return the response
+
+    return {
+
+      success: true,
+
+      status: response.getResponseCode(),
+
+      data: JSON.parse(response.getContentText())
+
+    };
+
+  } catch (error) {
+
+    return {
+
+      success: false,
+
+      message: 'Error calling Claude API: ' + error.message
+
+    };
+
+  }
+
+}
+
+// Example usage
+
+function testClaudeApi() {
+
+  const result = callClaudeApi({
+
+    messages: [
+
+      {"role": "user", "content": "Hello, world"}
+
+    ]
+
+  });
+
+  
+
+  if (result.success) {
+
+    console.log("Claude response:", result.data.content);
+
+  } else {
+
+    console.error("Error:", result.message);
+
+  }
+
+}
