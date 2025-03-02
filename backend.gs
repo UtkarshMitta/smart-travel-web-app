@@ -1201,6 +1201,40 @@ function getApiKey(keyName) {
   }
 }
 
+/**
+ * Proxy for Claude API to avoid CORS issues
+ * @param {string} apiKey - Claude API key
+ * @param {object} requestData - Request data to send to Claude API
+ * @returns {object} - Response from Claude API
+ */
+function proxyClaudeApi(apiKey, requestData) {
+  try {
+    // Make the request to Claude API from the server side
+    const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      payload: JSON.stringify(requestData),
+      muteHttpExceptions: true
+    });
+    
+    // Return the response
+    return {
+      success: true,
+      status: response.getResponseCode(),
+      data: JSON.parse(response.getContentText())
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Error proxying request: ' + error.message
+    };
+  }
+}
+
 /* ===== WEB APP ENDPOINTS ===== */
 
 /**
@@ -1231,10 +1265,22 @@ function doGet(e) {
     
     // Execute the action
     switch (action) {
+      case 'proxyClaudeApi':
+        // Get API key from the database
+        const apiKey = getApiKey('CLAUDE_API_KEY');
+        if (!apiKey) {
+          result = { success: false, message: 'API key not found' };
+        } else {
+          // Extract the request data from the parameters
+          const requestData = data || params;
+          result = proxyClaudeApi(apiKey, requestData);
+        }
+        break;
+        
       case 'getApiKey':
         // Only return API key if it matches the expected key name
-        if ((data || params).keyName === 'CLAUDE_KE') {
-          const apiKey = getApiKey('CLAUDE_KE');
+        if ((data || params).keyName === 'CLAUDE_API_KEY') {
+          const apiKey = getApiKey('CLAUDE_API_KEY');
           result = { success: true, apiKey: apiKey };
         } else {
           result = { success: false, message: 'Invalid API key request' };

@@ -2,12 +2,6 @@
  * Smart Search functionality using Claude AI
  */
 document.addEventListener('DOMContentLoaded', async function() {
-    // Initialize with empty API key
-    let CLAUDE_KE = 'ant-api03-NHTaxo_PLMKOS43y3nnkOeQJXOQ_3RQT-Dw-WmqAwpNAp5FERJyEoW01VgErxwhrtaoH4jGMPjpsOspPJNQ_FA-ZCVJTwAA';
-    let text='sk-';
-    CLAUDE_KE=text.concat(CLAUDE_KE);
-    
-    
     // Predefined keywords that map to locations in the database
     const PREDEFINED_KEYWORDS = [
         'beach', 'mountain', 'island', 'city', 'adventure', 'cultural', 
@@ -161,53 +155,44 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     /**
-     * Call Claude API to analyze the search query
+     * Call Claude API through backend proxy to analyze the search query
      * @param {string} query - The search query
      * @returns {Promise<Object>} - Object with keyword scores
      */
     async function analyzeQueryWithClaude(query) {
-        // Check if we have a valid API key
-
         try {
-            // Prepare the request to Claude API
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': CLAUDE_KE,
-                    'anthropic-version': '2023-06-01'
-                },
-                body: JSON.stringify({
-                    model: 'claude-3-7-sonnet-20250219',
-                    max_tokens: 1024,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: `I need you to analyze this travel search query: "${query}"
-                            
-                            Please rank how well it matches each of these travel keywords on a scale from 0-10, where 10 is a perfect match:
-                            ${PREDEFINED_KEYWORDS.join(', ')}
-                            
-                            Return your response as a JSON object with keywords as keys and scores as values. For example:
-                            {"beach": 9, "mountain": 0, ...}
-                            
-                            Only include the JSON in your response with no other text.`
-                        }
-                    ]
-                })
-            });
+            // Prepare the Claude API request payload
+            const requestPayload = {
+                model: 'claude-3-7-sonnet-20250219',
+                max_tokens: 1024,
+                messages: [
+                    {
+                        role: 'user',
+                        content: `I need you to analyze this travel search query: "${query}"
+                        
+                        Please rank how well it matches each of these travel keywords on a scale from 0-10, where 10 is a perfect match:
+                        ${PREDEFINED_KEYWORDS.join(', ')}
+                        
+                        Return your response as a JSON object with keywords as keys and scores as values. For example:
+                        {"beach": 9, "mountain": 0, ...}
+                        
+                        Only include the JSON in your response with no other text.`
+                    }
+                ]
+            };
+
+            // Use our backend proxy instead of calling Claude directly
+            const response = await API.post('proxyClaudeApi', requestPayload);
             
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
+            if (!response.success) {
+                throw new Error(`API proxy request failed: ${response.message || 'Unknown error'}`);
             }
-            
-            const data = await response.json();
             
             // Extract the JSON object from Claude's response
             let keywordScores = {};
             try {
                 // Try to parse the content directly
-                const content = data.content[0].text;
+                const content = response.data.content[0].text;
                 
                 // Use regex to extract the JSON object from the response
                 const jsonMatch = content.match(/\{[\s\S]*\}/);
