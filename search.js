@@ -152,6 +152,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Don't search if query is too short
         if (query.length < 2) {
             searchLoading.style.display = 'none';
+            
+            // Make sure trending list is visible if search is canceled/too short
+            const trendingList = document.querySelector('.trending-list');
+            if (trendingList) {
+                trendingList.style.opacity = '1';
+                trendingList.style.transform = '';
+            }
             return;
         }
         
@@ -205,9 +212,17 @@ document.addEventListener('DOMContentLoaded', async function() {
      * @param {string} query - The search query
      */
     async function performSmartSearch(query) {
-        // Show loading animation
-        searchLoading.style.display = 'block';
+        // Show loading animation that covers the whole page
+        searchLoading.style.display = 'flex';
         searchLoading.innerHTML = '';
+        
+        // Temporarily hide the trending list while searching
+        const trendingList = document.querySelector('.trending-list');
+        if (trendingList) {
+            trendingList.style.opacity = '0';
+            trendingList.style.transform = 'scale(0.95)';
+            trendingList.style.transition = 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        }
         
         // Step 1: Starting search
         updateLoadingStatus('Initializing smart search...', 10);
@@ -243,6 +258,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             setTimeout(() => {
                 displaySearchResults(matchedDestinations, query, keywordScores);
                 searchLoading.style.display = 'none';
+                
+                // Restore visibility of trending list after search completes
+                const trendingList = document.querySelector('.trending-list');
+                if (trendingList) {
+                    trendingList.style.opacity = '1';
+                    trendingList.style.transform = '';
+                }
             }, 2500);
             
         } catch (error) {
@@ -257,6 +279,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Hide error after 3 seconds
             setTimeout(() => {
                 searchLoading.style.display = 'none';
+                
+                // Restore visibility of trending list after error
+                const trendingList = document.querySelector('.trending-list');
+                if (trendingList) {
+                    trendingList.style.opacity = '1';
+                    trendingList.style.transform = '';
+                }
             }, 3000);
         }
     }
