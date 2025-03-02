@@ -14,98 +14,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const destinationsResponse = await API.getTrendingDestinations(8);
         if (destinationsResponse.success) {
             destinations = destinationsResponse.destinations;
-            // Load trending destinations into the map overlay cards
-            loadTrendingDestinationCards(destinations);
         }
     } catch (error) {
         console.error('Error fetching destinations:', error);
-    }
-    
-    // Function to load trending destination cards in the map overlay
-    function loadTrendingDestinationCards(destinations) {
-        const trendingCardsContainer = document.getElementById('trending-destination-cards');
-        if (!trendingCardsContainer) return;
-        
-        // Clear any existing cards
-        trendingCardsContainer.innerHTML = '';
-        
-        // Add destination cards to the trending container
-        destinations.forEach(dest => {
-            const card = createDestinationCard(dest);
-            trendingCardsContainer.appendChild(card);
-        });
-    }
-    
-    // Function to create a destination card element
-    function createDestinationCard(destination) {
-        const card = document.createElement('div');
-        card.className = 'destination-card';
-        card.dataset.destinationId = destination.DestinationID;
-        
-        const icon = destination.Icon || 'fa-map-marker-alt';
-        const description = destination.Description || destination.Region || 'Amazing destination';
-        
-        card.innerHTML = `
-            <div class="destination-card-header">
-                <div class="destination-card-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <h4 class="destination-card-title">${destination.Name}</h4>
-            </div>
-            <div class="destination-card-description">${description}</div>
-            <div class="destination-card-stats">
-                <div class="destination-card-stat">
-                    <i class="fas fa-user"></i> ${destination.TravellerCount || 'N/A'} travelers
-                </div>
-                <div class="destination-card-stat">
-                    <i class="fas fa-arrow-trend-up"></i> +${destination.TrendingPercentage || 'N/A'}%
-                </div>
-            </div>
-        `;
-        
-        // Add click handler for the card
-        card.addEventListener('click', () => {
-            // Find and click the corresponding trending item or location card to reuse existing logic
-            const trendingItems = document.querySelectorAll('.trending-item');
-            let clicked = false;
-            
-            trendingItems.forEach(item => {
-                const itemTitle = item.querySelector('h4')?.textContent;
-                if (itemTitle && destination.Name.includes(itemTitle) || (itemTitle && itemTitle.includes(destination.Name.split(',')[0]))) {
-                    item.click();
-                    clicked = true;
-                }
-            });
-            
-            if (!clicked) {
-                const locationCards = document.querySelectorAll('.location-card');
-                locationCards.forEach(card => {
-                    const cardName = card.querySelector('h3')?.textContent;
-                    if (cardName && (destination.Name.includes(cardName) || cardName.includes(destination.Name.split(',')[0]))) {
-                        setTimeout(() => {
-                            // First switch to connect tab if needed
-                            const connectTab = document.querySelector('[data-tab="connect"]');
-                            if (connectTab && !connectTab.classList.contains('active')) {
-                                connectTab.click();
-                            }
-                            
-                            // Then click the card after tab transition
-                            setTimeout(() => {
-                                card.click();
-                            }, 300);
-                        }, 100);
-                        clicked = true;
-                    }
-                });
-            }
-            
-            if (!clicked) {
-                // Just show an alert for now
-                alert(`Selected destination: ${destination.Name}\nDetails coming soon!`);
-            }
-        });
-        
-        return card;
     }
     
     // Object to store travelers by destination

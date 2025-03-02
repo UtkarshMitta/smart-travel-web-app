@@ -2,12 +2,8 @@
  * Smart Search functionality using Claude AI
  */
 document.addEventListener('DOMContentLoaded', async function() {
-    // Predefined keywords that map to locations in the database
-    const PREDEFINED_KEYWORDS = [
-        'beach', 'mountain', 'island', 'city', 'adventure', 'cultural', 
-        'historical', 'tropical', 'winter', 'summer', 'family', 'romantic',
-        'budget', 'luxury', 'food', 'nightlife', 'nature', 'photography'
-    ];
+    // This will hold unique keywords extracted from all destinations
+    let PREDEFINED_KEYWORDS = [];
     
     // Destinations with associated keywords (will be populated from database)
     let DESTINATIONS = [];
@@ -16,6 +12,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         const response = await API.getAllDestinations();
         if (response.success && response.destinations) {
+            // Create a Set to store unique keywords
+            const uniqueKeywordsSet = new Set();
+            
             // Transform the destinations into the format we need
             DESTINATIONS = response.destinations.map(dest => {
                 let keywords = [];
@@ -24,6 +23,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (dest.Keywords) {
                     try {
                         keywords = JSON.parse(dest.Keywords);
+                        
+                        // Add each keyword to our unique keywords set
+                        if (Array.isArray(keywords)) {
+                            keywords.forEach(keyword => {
+                                if (keyword && typeof keyword === 'string') {
+                                    uniqueKeywordsSet.add(keyword.trim().toLowerCase());
+                                }
+                            });
+                        }
                     } catch (e) {
                         console.error('Error parsing keywords for destination:', dest.Name, e);
                     }
@@ -40,11 +48,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                 };
             });
             
+            // Convert our Set to an array for PREDEFINED_KEYWORDS
+            PREDEFINED_KEYWORDS = Array.from(uniqueKeywordsSet);
+            
             console.log('Loaded destinations from database:', DESTINATIONS.length);
-            console.log('Sample destination:', DESTINATIONS[0]);
+            console.log('Extracted unique keywords:', PREDEFINED_KEYWORDS.length);
+            console.log('Sample keywords:', PREDEFINED_KEYWORDS.slice(0, 10));
         } else {
             console.error('Failed to load destinations from database:', response.message);
-            // Fallback to some default destinations if database loading fails
+            // Fallback to some default destinations and keywords if database loading fails
             DESTINATIONS = [
                 { id: 'D-001', name: 'Bali, Indonesia', keywords: ['beach', 'island', 'tropical', 'cultural', 'summer', 'photography'], icon: 'fa-umbrella-beach' },
                 { id: 'D-002', name: 'Patagonia, Chile', keywords: ['mountain', 'adventure', 'nature', 'photography'], icon: 'fa-mountain' },
@@ -52,10 +64,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                 { id: 'D-004', name: 'Lisbon, Portugal', keywords: ['city', 'historical', 'food', 'summer', 'budget'], icon: 'fa-city' },
                 { id: 'D-005', name: 'Santorini, Greece', keywords: ['island', 'beach', 'romantic', 'summer', 'photography'], icon: 'fa-water' }
             ];
+            
+            // Extract unique keywords from our fallback destinations
+            const uniqueKeywordsSet = new Set();
+            DESTINATIONS.forEach(dest => {
+                if (Array.isArray(dest.keywords)) {
+                    dest.keywords.forEach(keyword => uniqueKeywordsSet.add(keyword));
+                }
+            });
+            PREDEFINED_KEYWORDS = Array.from(uniqueKeywordsSet);
         }
     } catch (error) {
         console.error('Error fetching destinations:', error);
-        // Fallback to some default destinations if there's an error
+        // Fallback to some default destinations and keywords if there's an error
         DESTINATIONS = [
             { id: 'D-001', name: 'Bali, Indonesia', keywords: ['beach', 'island', 'tropical', 'cultural', 'summer', 'photography'], icon: 'fa-umbrella-beach' },
             { id: 'D-002', name: 'Patagonia, Chile', keywords: ['mountain', 'adventure', 'nature', 'photography'], icon: 'fa-mountain' },
@@ -63,6 +84,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             { id: 'D-004', name: 'Lisbon, Portugal', keywords: ['city', 'historical', 'food', 'summer', 'budget'], icon: 'fa-city' },
             { id: 'D-005', name: 'Santorini, Greece', keywords: ['island', 'beach', 'romantic', 'summer', 'photography'], icon: 'fa-water' }
         ];
+        
+        // Extract unique keywords from our fallback destinations
+        const uniqueKeywordsSet = new Set();
+        DESTINATIONS.forEach(dest => {
+            if (Array.isArray(dest.keywords)) {
+                dest.keywords.forEach(keyword => uniqueKeywordsSet.add(keyword));
+            }
+        });
+        PREDEFINED_KEYWORDS = Array.from(uniqueKeywordsSet);
     }
     
     // Search input and results elements
@@ -107,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function clearSearchMode() {
         const mapOverlay = document.querySelector('.map-overlay');
         const searchResultsContainer = document.querySelector('.search-results-container');
+        const trendingList = document.querySelector('.trending-list');
         
         if (mapOverlay) {
             mapOverlay.classList.remove('search-mode');
@@ -114,6 +145,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         if (searchResultsContainer) {
             searchResultsContainer.style.display = 'none';
+        }
+        
+        // Restore trending list to center position
+        if (trendingList) {
+            trendingList.style.transform = 'translateX(0)';
         }
     }
     
@@ -224,6 +260,57 @@ document.addEventListener('DOMContentLoaded', async function() {
      */
     async function analyzeQueryWithClaude(query) {
         try {
+            // For performance reasons, limit the number of keywords we send to Claude
+            // If we have more than 50 keywords, select the most relevant ones based on the query
+            let keywordsToAnalyze = PREDEFINED_KEYWORDS;
+            
+            if (PREDEFINED_KEYWORDS.length > 50) {
+                const queryLower = query.toLowerCase();
+                
+                // First, include any keywords that directly appear in the query
+                const directMatches = PREDEFINED_KEYWORDS.filter(keyword => 
+                    queryLower.includes(keyword.toLowerCase()));
+                
+                // Then add keywords from common travel themes related to the query
+                const commonThemes = {
+                    'relaxation': ['beach', 'tropical', 'resort', 'island', 'spa', 'relaxing'],
+                    'adventure': ['hiking', 'trek', 'mountain', 'adventure', 'outdoor', 'climbing', 'safari'],
+                    'luxury': ['resort', 'spa', 'luxury', 'exclusive', 'premium', 'five-star'],
+                    'culture': ['museum', 'history', 'historical', 'cultural', 'architecture', 'heritage'],
+                    'family': ['family', 'kid', 'children', 'theme park', 'amusement'],
+                    'food': ['cuisine', 'gastronomy', 'food', 'restaurant', 'dining', 'culinary'],
+                    'nature': ['nature', 'wildlife', 'park', 'natural', 'forest', 'eco', 'landscape']
+                };
+                
+                const themeRelatedKeywords = [];
+                Object.entries(commonThemes).forEach(([theme, themeWords]) => {
+                    if (themeWords.some(word => queryLower.includes(word))) {
+                        // Find keywords related to this theme
+                        PREDEFINED_KEYWORDS.forEach(keyword => {
+                            if (themeWords.some(word => keyword.includes(word))) {
+                                themeRelatedKeywords.push(keyword);
+                            }
+                        });
+                    }
+                });
+                
+                // Combine direct matches and theme matches, then add random selections to reach 50
+                keywordsToAnalyze = Array.from(new Set([...directMatches, ...themeRelatedKeywords]));
+                
+                // If we still need more keywords, add random ones up to 50
+                if (keywordsToAnalyze.length < 50) {
+                    const remainingKeywords = PREDEFINED_KEYWORDS.filter(
+                        keyword => !keywordsToAnalyze.includes(keyword)
+                    );
+                    
+                    // Shuffle the remaining keywords and take enough to reach 50
+                    const shuffled = remainingKeywords.sort(() => 0.5 - Math.random());
+                    const selected = shuffled.slice(0, 50 - keywordsToAnalyze.length);
+                    
+                    keywordsToAnalyze = [...keywordsToAnalyze, ...selected];
+                }
+            }
+            
             // Prepare the Claude API request
             const requestData = {
                 messages: [
@@ -232,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         content: `I need you to analyze this travel search query: "${query}"
                         
                         Please rank how well it matches each of these travel keywords on a scale from 0-10, where 10 is a perfect match:
-                        ${PREDEFINED_KEYWORDS.join(', ')}
+                        ${keywordsToAnalyze.join(', ')}
                         
                         Return your response as a JSON object with keywords as keys and scores as values. For example:
                         {"beach": 9, "mountain": 0, ...}
@@ -303,7 +390,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         PREDEFINED_KEYWORDS.forEach(keyword => {
             if (queryLower.includes(keyword)) {
                 scores[keyword] = 9;
-            } else if (queryLower.includes(keyword.slice(0, -2))) {
+            } else if (keyword.length > 3 && queryLower.includes(keyword.slice(0, -2))) {
                 // Partial match (e.g., "beach" vs "beaches")
                 scores[keyword] = 7;
             } else {
@@ -312,25 +399,31 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
         
-        // Additional heuristics for common travel phrases
-        if (queryLower.includes('vacation') || queryLower.includes('holiday')) {
-            scores['beach'] += 2;
-            scores['tropical'] += 2;
-        }
-        if (queryLower.includes('hiking') || queryLower.includes('trek')) {
-            scores['mountain'] += 3;
-            scores['adventure'] += 3;
-            scores['nature'] += 3;
-        }
-        if (queryLower.includes('resort') || queryLower.includes('spa')) {
-            scores['luxury'] += 3;
-            scores['romantic'] += 2;
-        }
-        if (queryLower.includes('museum') || queryLower.includes('history')) {
-            scores['historical'] += 3;
-            scores['cultural'] += 3;
-            scores['city'] += 2;
-        }
+        // Additional heuristics for common travel themes
+        // Check if our extracted keywords have certain travel themes
+        const commonThemes = {
+            'relaxation': ['beach', 'tropical', 'resort', 'island', 'spa', 'relaxing'],
+            'adventure': ['hiking', 'trek', 'mountain', 'adventure', 'outdoor', 'climbing', 'safari'],
+            'luxury': ['resort', 'spa', 'luxury', 'exclusive', 'premium', 'five-star'],
+            'culture': ['museum', 'history', 'historical', 'cultural', 'architecture', 'heritage'],
+            'family': ['family', 'kid', 'children', 'theme park', 'amusement'],
+            'food': ['cuisine', 'gastronomy', 'food', 'restaurant', 'dining', 'culinary'],
+            'nature': ['nature', 'wildlife', 'park', 'natural', 'forest', 'eco', 'landscape']
+        };
+        
+        // Boost scores for related keywords based on query themes
+        Object.entries(commonThemes).forEach(([theme, relatedKeywords]) => {
+            const themeInQuery = relatedKeywords.some(word => queryLower.includes(word));
+            
+            if (themeInQuery) {
+                // Find all keywords in our PREDEFINED_KEYWORDS that match the theme's related keywords
+                PREDEFINED_KEYWORDS.forEach(keyword => {
+                    if (relatedKeywords.some(word => keyword.includes(word))) {
+                        scores[keyword] = (scores[keyword] || 0) + 3;
+                    }
+                });
+            }
+        });
         
         // Cap scores at 10
         Object.keys(scores).forEach(key => {
@@ -542,11 +635,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         const mapOverlay = document.querySelector('.map-overlay');
         const searchResultsContainer = document.querySelector('.search-results-container');
         const searchDestinationCards = document.getElementById('search-destination-cards');
+        const trendingList = document.querySelector('.trending-list');
         
         if (!mapOverlay || !searchResultsContainer || !searchDestinationCards) return;
         
         // Add search-mode class to the map overlay to trigger the CSS transition
         mapOverlay.classList.add('search-mode');
+        
+        // Adjust layout - shift trending destinations to the right
+        if (trendingList) {
+            trendingList.style.transform = 'translateX(10%)';
+            trendingList.style.transition = 'transform 0.4s ease';
+        }
         
         // Clear previous cards
         searchDestinationCards.innerHTML = '';

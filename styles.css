@@ -373,52 +373,53 @@ h3 {
     z-index: 20;
 }
 
-.search-results-container,
-.trending-container {
-    flex: 1;
+.search-results-container {
+    width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 10px;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    max-height: 200px;
-}
-
-.search-results-container {
-    flex: 2;
+    padding: 15px;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    max-height: 220px;
     display: none; /* Initially hidden, will be shown when search is performed */
-}
-
-.trending-container {
-    flex: 1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
 .section-title {
     color: white;
-    font-size: 14px;
-    margin: 0 0 10px 0;
-    opacity: 0.9;
+    font-size: 16px;
+    margin: 0 0 12px 0;
+    opacity: 1;
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-#search-destination-cards,
-#trending-destination-cards {
+#search-destination-cards {
     display: flex;
     gap: 15px;
     padding-bottom: 10px;
     overflow-x: auto;
+    -ms-overflow-style: none;  /* Hide scrollbar in IE and Edge */
+    scrollbar-width: none;  /* Hide scrollbar in Firefox */
+}
+
+#search-destination-cards::-webkit-scrollbar {
+    display: none;  /* Hide scrollbar in Chrome/Safari */
 }
 
 .destination-card {
-    min-width: 180px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 8px;
-    padding: 12px;
+    min-width: 200px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    padding: 15px;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .destination-card:hover {
@@ -429,54 +430,57 @@ h3 {
 .destination-card-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
 .destination-card-icon {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background-color: var(--primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .destination-card-title {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
+    font-weight: 700;
+    color: var(--dark);
+    font-size: 15px;
     margin: 0;
+    line-height: 1.3;
 }
 
 .destination-card-description {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.4;
 }
 
 .destination-card-stats {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: 8px;
+    margin-top: 4px;
 }
 
 .destination-card-stat {
-    color: var(--text-secondary);
+    color: var(--primary);
+    font-weight: 500;
 }
 
 /* Dynamic UI states */
-.search-mode .trending-container {
-    flex: 1;
-}
-
 .search-mode .search-results-container {
     display: block;
 }
@@ -523,6 +527,9 @@ h3 {
     padding: 1.5rem;
     height: 100%;
     overflow: auto;
+    margin: 0 auto;
+    max-width: 80%;
+    transition: transform 0.4s ease, max-width 0.4s ease;
 }
 
 .trending-item {
