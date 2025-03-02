@@ -416,7 +416,11 @@
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" id="search-input" class="search-input" placeholder="Search destinations, travel styles, or interests...">
                     <div id="search-results" class="search-results"></div>
-                    <div id="search-loading" class="search-loading"></div>
+                </div>
+                <!-- Add this container here, right at the top of discover-grid: -->
+                <div class="search-results-container">
+                    <div class="section-title">Search Results</div>
+                    <div id="search-destination-cards"></div>
                 </div>
                 
                 <div class="discover-grid">
@@ -844,4 +848,7 @@
     }
 </style>
 </body>
+    <div id="search-loading" class="search-loading">
+    <!-- Dynamic content will be inserted by JavaScript -->
+</div>
 </html>s
