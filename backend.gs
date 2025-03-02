@@ -1745,7 +1745,7 @@ function identifyLocationFromImage(data) {
       `The user provided this description of the image: "${data.description}"` : 
       "";
     
-    // Prepare the request to Claude API with the image
+    // Prepare the request to Claude API with the image - using updated format
     const requestData = {
       model: "claude-3-7-sonnet-20250219",
       max_tokens: 1024,
@@ -1754,11 +1754,9 @@ function identifyLocationFromImage(data) {
           role: "user",
           content: [
             {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: "image/jpeg",
-                data: data.imageData
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${data.imageData}`
               }
             },
             {

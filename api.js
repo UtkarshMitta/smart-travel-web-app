@@ -74,6 +74,24 @@ const API = {
                 resolve(response);
             };
             
+            // Setup timeout to handle cases where the API doesn't respond
+            const timeoutId = setTimeout(function() {
+                // Clean up
+                if (script.parentNode) document.body.removeChild(script);
+                delete window[callbackName];
+                
+                // For image recognition, provide a fallback response
+                if (action === 'identifyLocation') {
+                    console.warn('Image recognition API timed out, providing fallback response');
+                    resolve({
+                        success: false,
+                        message: 'API request timed out. The server may be unavailable.'
+                    });
+                } else {
+                    reject(new Error('JSONP request timed out'));
+                }
+            }, 10000); // 10 second timeout
+            
             // Encode the data as a JSON string
             const encodedData = encodeURIComponent(JSON.stringify(data));
             
@@ -82,7 +100,8 @@ const API = {
             
             // Add error handling
             script.onerror = function() {
-                document.body.removeChild(script);
+                clearTimeout(timeoutId);
+                if (script.parentNode) document.body.removeChild(script);
                 delete window[callbackName];
                 reject(new Error('JSONP request failed'));
             };

@@ -503,6 +503,7 @@ function hideImageRecognitionModal() {
  * Show a notification message
  * @param {string} message - The message to display
  */
+
 function showNotification(message) {
     // Create notification element
     const notification = document.createElement('div');
