@@ -356,6 +356,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                                 locationTravelers.push({
                                     userId: user.UserID,
                                     name: `${user.FirstName} ${user.LastName.charAt(0)}.`,
+                                    avatar: user.Avatar || user.FirstName.charAt(0),
                                     verified: user.Verified,
                                     dates: formattedDates,
                                     interests: interests,
