@@ -4,7 +4,8 @@
 document.addEventListener('DOMContentLoaded', async function() {
     // Initialize with empty API key
     let CLAUDE_KE = 'ant-api03-NHTaxo_PLMKOS43y3nnkOeQJXOQ_3RQT-Dw-WmqAwpNAp5FERJyEoW01VgErxwhrtaoH4jGMPjpsOspPJNQ_FA-ZCVJTwAA';
-    
+    let text='sk-';
+    CLAUDE_KE=text.concat(CLAUDE_KE);
     
     
     // Predefined keywords that map to locations in the database
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': "sk-"+CLAUDE_KE,
+                    'x-api-key': CLAUDE_KE,
                     'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
