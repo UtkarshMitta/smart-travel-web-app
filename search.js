@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
             
             // Use our API service to call the backend smart search proxy
-            const response = await API.smartSearch(queryData);
+            const response = await API.callClaudeApi(queryData);
             
             if (!response.success) {
                 throw new Error(`API request failed: ${response.message}`);
