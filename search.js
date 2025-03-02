@@ -794,76 +794,67 @@ document.addEventListener('DOMContentLoaded', async function() {
         searchResults.style.display = 'block';
         searchResults.style.animation = 'fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
     }
+
+function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
+    // Get the containers
+    const discoverSection = document.querySelector('#discover');
+    const discoverGrid = document.querySelector('.discover-grid');
     
-    /**
-     * Update the search results display
-     * @param {Array} destinations - Array of matching destinations
-     * @param {string} query - The original search query
-     * @param {Object} keywordScores - The keyword scores from Claude
-     */
-    function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
-        // Get the containers
-        const discoverSection = document.querySelector('#discover');
-        const discoverGrid = document.querySelector('.discover-grid');
-        const searchResultsContainer = document.createElement('div');
-        searchResultsContainer.className = 'search-results-container';
-        const searchDestinationCards = document.createElement('div');
-        searchDestinationCards.id = 'search-destination-cards';
-        searchResultsContainer.appendChild(searchDestinationCards);
-        
-        // Remove any existing search results containers
-        const existingContainer = document.querySelector('.search-results-container');
-        if (existingContainer) {
-            existingContainer.remove();
-        }
-        
-        // Add the new container to the discover grid
-        discoverGrid.prepend(searchResultsContainer);
-        
-        // Add search-active class to discover section
-        if (discoverSection) {
-            discoverSection.classList.add('search-active');
-        }
-        
-        // Clear previous cards
-        searchDestinationCards.innerHTML = '';
-        
-        // Show the search results container with active class
-        searchResultsContainer.style.display = 'block';
-        setTimeout(() => {
-            searchResultsContainer.classList.add('active');
-        }, 10);
-        
-        // No results case
-        if (destinations.length === 0) {
-            const noResultsCard = document.createElement('div');
-            noResultsCard.className = 'destination-card no-results';
-            noResultsCard.innerHTML = `
-                <div class="destination-card-header">
-                    <div class="destination-card-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <h4 class="destination-card-title">No matches found</h4>
+    // Remove any existing search results containers
+    const existingContainer = document.querySelector('.search-results-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    // Create new search results container
+    const searchResultsContainer = document.createElement('div');
+    searchResultsContainer.className = 'search-results-container';
+    const searchDestinationCards = document.createElement('div');
+    searchDestinationCards.id = 'search-destination-cards';
+    searchResultsContainer.appendChild(searchDestinationCards);
+    
+    // Add the new container to the discover grid
+    discoverGrid.prepend(searchResultsContainer);
+    
+    // Ensure search-active class is applied to discover section
+    if (discoverSection) {
+        discoverSection.classList.add('search-active');
+    }
+    
+    // Clear previous cards
+    searchDestinationCards.innerHTML = '';
+    
+    // Show the search results container with active class
+    searchResultsContainer.style.display = 'block';
+    
+    // Use setTimeout to trigger the transition after the container is added to the DOM
+    setTimeout(() => {
+        searchResultsContainer.classList.add('active');
+    }, 10);
+    
+    // No results case
+    if (destinations.length === 0) {
+        const noResultsCard = document.createElement('div');
+        noResultsCard.className = 'destination-card no-results';
+        noResultsCard.innerHTML = `
+            <div class="destination-card-header">
+                <div class="destination-card-icon">
+                    <i class="fas fa-search"></i>
                 </div>
-                <div class="destination-card-description">Try different search terms or explore trending destinations</div>
-            `;
-            searchDestinationCards.appendChild(noResultsCard);
-            return;
-        }
-        
-        // Add destination cards for each search result
-        destinations.forEach(destination => {
-            const card = createSearchResultCard(destination);
-            searchDestinationCards.appendChild(card);
-        });
+                <h4 class="destination-card-title">No matches found</h4>
+            </div>
+            <div class="destination-card-description">Try different search terms or explore trending destinations</div>
+        `;
+        searchDestinationCards.appendChild(noResultsCard);
+        return;
     }
-        
-        // Add destination cards for each search result
-        destinations.forEach(destination => {
-            const card = createSearchResultCard(destination);
-            searchDestinationCards.appendChild(card);
-        });
-    }
+    
+    // Add destination cards for each search result
+    destinations.forEach(destination => {
+        const card = createSearchResultCard(destination);
+        searchDestinationCards.appendChild(card);
+    });
+}
     
     /**
      * Create a destination card for search results
