@@ -39,3 +39,10 @@ yarn-error.log*
 # Local configuration files with sensitive information
 config.local.js
 .secret-*
+*apikey*
+*api-key*
+*secret*
+*credentials*
+*.env
+*key.js
+*keys.js
