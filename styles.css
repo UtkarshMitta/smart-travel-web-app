@@ -2380,3 +2380,68 @@ label {
         margin-top: -40px;
     }
 }
+/* Search-related CSS fixes */
+
+/* Fix transition for trending list when search is active */
+.search-active .trending-list {
+    width: 90%;
+    transform: translateX(30%) translateY(20px); /* Add horizontal movement */
+    max-width: 500px; /* Reduce max-width to make space for search results */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Fix search results container positioning and visibility */
+.search-results-container {
+    width: 100%;
+    max-width: 800px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+    border-radius: 16px;
+    background-color: rgba(17, 17, 17, 0.85);
+    backdrop-filter: blur(16px);
+    max-height: 260px;
+    display: none; /* Initially hidden */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    transform: translateY(20px);
+    opacity: 0;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    z-index: 30; /* Increased z-index to ensure it appears above trending */
+}
+
+/* Ensure search results appear correctly when active */
+.search-active .search-results-container.active {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+}
+
+/* Overall discover section layout improvements */
+#discover.search-active {
+    position: relative;
+}
+
+/* Adjust the discover grid to make space for search */
+.search-active .discover-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Improve animation for search results visibility */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
