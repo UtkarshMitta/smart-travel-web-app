@@ -47,12 +47,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="image-description-area">
                         <label for="image-description">Add context about the image (optional):</label>
-                        <textarea id="image-description" placeholder="Example: 'This is a photo I took during summer vacation', 'Can you identify this historical landmark?', etc."></textarea>
+                        <textarea id="image-description" placeholder="Example: 'This is a photo I took during summer vacation', 'Can you  this historical landmark?', etc."></textarea>
                     </div>
                     
                     <div class="image-recognition-actions">
                         <button class="analyze-image-btn" id="analyze-image-btn" disabled>
-                            <i class="fas fa-search-location"></i> Identify Location
+                            <i class="fas fa-search-location"></i>  Location
                         </button>
                     </div>
                 </div>
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const imageData = imagePreview.src.split(',')[1];
         
-        API.identifyLocationFromImage(imageData, description)
+        API.LocationFromImage(imageData, description)
             .then(response => {
                 loadingArea.style.display = 'none';
                 
@@ -354,7 +354,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // API namespace for backend interactions
 const API = API || {};
 
-// Implementation of the missing function for image location identification
+// Replace the current identifyLocationFromImage function with this:
+
 API.identifyLocationFromImage = function(imageData, description = '') {
     return new Promise((resolve, reject) => {
         const mediaType = 'image/jpeg'; // Default to JPEG, but could detect from the data URL
