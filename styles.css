@@ -448,6 +448,7 @@ h3 {
     overflow: hidden;
     aspect-ratio: 16/9;
     position: relative;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #map {
@@ -457,6 +458,11 @@ h3 {
     background: url('/api/placeholder/1000/563') center/cover;
     filter: grayscale(30%) contrast(120%) brightness(70%);
     opacity: 0.9;
+    transition: opacity 0.4s ease;
+}
+
+.map-container.search-mode #map {
+    opacity: 0.4; /* Reduce opacity when in search mode */
 }
 
 .map-overlay {
@@ -465,6 +471,13 @@ h3 {
     background: radial-gradient(circle at center, transparent 30%, rgba(8, 8, 8, 0.8));
     pointer-events: all;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.search-mode .map-overlay {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* Add a slow spotlight animation to the map overlay */
@@ -505,11 +518,19 @@ h3 {
     background-color: rgba(17, 17, 17, 0.85);
     backdrop-filter: blur(16px);
     max-height: 260px;
-    display: none; /* Initially hidden, will be shown when search is performed */
+    display: none; /* Initially hidden */
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid rgba(255, 255, 255, 0.07);
     animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(20px);
+    opacity: 0;
+}
+
+.search-results-container.active {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
 }
 
 @keyframes fadeIn {
@@ -920,8 +941,14 @@ h3 {
 }
 
 /* Dynamic UI states */
-.search-mode .search-results-container {
-    display: block;
+.map-container.search-mode .map-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+.search-results-container.active {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Animation for transitions */
