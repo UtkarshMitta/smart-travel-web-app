@@ -1202,13 +1202,23 @@ function getApiKey(keyName) {
 }
 
 /**
- * Proxy for Claude API to avoid CORS issues and secure API key
- * @param {object} requestData - Request data to send to Claude API
- * @returns {object} - Response from Claude API
+ * Smart Search function that uses Claude AI to analyze travel queries
+ * @param {object} searchData - Object containing query and keywords
+ * @returns {object} - Response with keyword scores
  */
-function proxyClaudeApi(requestData) {
+function smartSearch(searchData) {
   try {
-    // Get the API key from the database
+    const query = searchData.query;
+    const keywords = searchData.keywords;
+    
+    if (!query || !keywords || !Array.isArray(keywords)) {
+      return {
+        success: false,
+        message: 'Invalid search data - query and keywords array required'
+      };
+    }
+    
+    // Get the Claude API key from the database
     const apiKey = getApiKey('CLAUDE_API_KEY');
     
     if (!apiKey) {
@@ -1217,6 +1227,26 @@ function proxyClaudeApi(requestData) {
         message: 'API key not found or invalid'
       };
     }
+    
+    // Prepare the request to Claude API
+    const requestData = {
+      model: 'claude-3-7-sonnet-20250219',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: `I need you to analyze this travel search query: "${query}"
+          
+          Please rank how well it matches each of these travel keywords on a scale from 0-10, where 10 is a perfect match:
+          ${keywords.join(', ')}
+          
+          Return your response as a JSON object with keywords as keys and scores as values. For example:
+          {"beach": 9, "mountain": 0, ...}
+          
+          Only include the JSON in your response with no other text.`
+        }
+      ]
+    };
     
     // Make the request to Claude API from the server side
     const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
@@ -1230,16 +1260,48 @@ function proxyClaudeApi(requestData) {
       muteHttpExceptions: true
     });
     
-    // Return the response
-    return {
-      success: true,
-      status: response.getResponseCode(),
-      data: JSON.parse(response.getContentText())
-    };
+    if (response.getResponseCode() !== 200) {
+      return {
+        success: false,
+        message: `Claude API request failed with status ${response.getResponseCode()}`
+      };
+    }
+    
+    const data = JSON.parse(response.getContentText());
+    
+    // Extract the JSON object from Claude's response
+    try {
+      // Try to parse the content directly
+      const content = data.content[0].text;
+      
+      // Use regex to extract the JSON object from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const keywordScores = JSON.parse(jsonMatch[0]);
+        return {
+          success: true,
+          keywordScores: keywordScores
+        };
+      } else {
+        // Return error if no JSON found
+        return {
+          success: false,
+          message: 'Could not parse Claude response'
+        };
+      }
+    } catch (parseError) {
+      console.error('Error parsing Claude response:', parseError);
+      return {
+        success: false,
+        message: 'Error parsing Claude response: ' + parseError.message
+      };
+    }
+    
   } catch (error) {
+    console.error('Error in smart search:', error);
     return {
       success: false,
-      message: 'Error proxying request: ' + error.message
+      message: 'Error in smart search: ' + error.message
     };
   }
 }
@@ -1274,15 +1336,15 @@ function doGet(e) {
     
     // Execute the action
     switch (action) {
-      case 'proxyClaudeApi':
-        // Extract the request data from the parameters
-        const requestData = data || params;
-        result = proxyClaudeApi(requestData);
+      case 'smartSearch':
+        // Extract the search data from the parameters
+        const searchData = data || params;
+        result = smartSearch(searchData);
         break;
         
       case 'getApiKey':
-        // This endpoint is no longer needed since the API key is now handled by the backend
-        result = { success: false, message: 'This endpoint is deprecated. Use proxyClaudeApi instead.' };
+        // This endpoint is deprecated as API key is now handled securely on the backend
+        result = { success: false, message: 'This endpoint is deprecated. Use smartSearch instead.' };
         break;
       case 'signup':
         result = createUser(data || params);
@@ -1606,7 +1668,7 @@ function callClaudeApi(requestData) {
 
     // Your API key (consider moving this to the API_KEYS sheet in production)
 
-    const apiKey = "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";
+    const apiKey = "";
 
     
 

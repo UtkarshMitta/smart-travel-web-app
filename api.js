@@ -14,12 +14,12 @@ const API = {
     },
     
     /**
-     * Proxy Claude API calls through the backend to avoid CORS issues and hide API key
-     * @param {object} requestData - Request data to send to Claude API
+     * Use Smart Search via the backend (powered by Claude AI)
+     * @param {object} searchData - Object containing query and keywords
      * @returns {Promise} - Promise that resolves with the API response
      */
-    proxyClaudeApi: function(requestData) {
-        return this.post('proxyClaudeApi', requestData);
+    smartSearch: function(searchData) {
+        return this.post('smartSearch', searchData);
     },
     
     /**

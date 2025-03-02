@@ -2,9 +2,6 @@
  * Smart Search functionality using Claude AI
  */
 document.addEventListener('DOMContentLoaded', async function() {
-    // No need to initialize Claude API key as we now use backend proxy
-    
-    
     // Predefined keywords that map to locations in the database
     const PREDEFINED_KEYWORDS = [
         'beach', 'mountain', 'island', 'city', 'adventure', 'cultural', 
@@ -164,58 +161,24 @@ document.addEventListener('DOMContentLoaded', async function() {
      */
     async function analyzeQueryWithClaude(query) {
         try {
-            // Call the backend proxy for Claude API instead of calling it directly
-            const requestData = {
-                model: 'claude-3-7-sonnet-20250219',
-                max_tokens: 1024,
-                messages: [
-                    {
-                        role: 'user',
-                        content: `I need you to analyze this travel search query: "${query}"
-                        
-                        Please rank how well it matches each of these travel keywords on a scale from 0-10, where 10 is a perfect match:
-                        ${PREDEFINED_KEYWORDS.join(', ')}
-                        
-                        Return your response as a JSON object with keywords as keys and scores as values. For example:
-                        {"beach": 9, "mountain": 0, ...}
-                        
-                        Only include the JSON in your response with no other text.`
-                    }
-                ]
+            // Prepare the query for Claude AI analysis
+            const queryData = {
+                query: query,
+                keywords: PREDEFINED_KEYWORDS
             };
             
-            // Use our API service to call the backend proxy
-            const response = await API.proxyClaudeApi(requestData);
+            // Use our API service to call the backend smart search proxy
+            const response = await API.smartSearch(queryData);
             
             if (!response.success) {
                 throw new Error(`API request failed: ${response.message}`);
             }
             
-            const data = response.data;
+            // Return the keyword scores from the backend
+            return response.keywordScores;
             
-            // Extract the JSON object from Claude's response
-            let keywordScores = {};
-            try {
-                // Try to parse the content directly
-                const content = data.content[0].text;
-                
-                // Use regex to extract the JSON object from the response
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    keywordScores = JSON.parse(jsonMatch[0]);
-                } else {
-                    // Fallback to manually scoring based on query keywords
-                    keywordScores = fallbackScoring(query);
-                }
-            } catch (parseError) {
-                console.error('Error parsing Claude response:', parseError);
-                // Fallback to manual scoring
-                keywordScores = fallbackScoring(query);
-            }
-            
-            return keywordScores;
         } catch (error) {
-            console.error('Error calling Claude API:', error);
+            console.error('Error calling Claude API via backend:', error);
             // Return fallback scoring if API call fails
             return fallbackScoring(query);
         }
