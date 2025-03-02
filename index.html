@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cluster - The Traveler Connection Platform</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
 <body>
@@ -414,7 +414,9 @@
             <section id="discover" class="content-section active">
                 <div class="search-bar">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Search destinations, travel styles, or interests...">
+                    <input type="text" id="search-input" class="search-input" placeholder="Search destinations, travel styles, or interests...">
+                    <div id="search-results" class="search-results"></div>
+                    <div id="search-loading" class="search-loading"></div>
                 </div>
                 
                 <div class="discover-grid">
@@ -840,6 +842,7 @@
     
     <script src="api.js"></script>
     <script src="script.js"></script>
+    <script src="search.js"></script>
     
     <script>
         // Check if user is logged in, redirect to login page if not

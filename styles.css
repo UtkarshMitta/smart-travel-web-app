@@ -195,6 +195,109 @@ h3 {
     color: var(--text-tertiary);
 }
 
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--dark-surface);
+    border: 1px solid var(--border);
+    border-radius: 0 0 12px 12px;
+    margin-top: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.search-result-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-result-item:hover {
+    background: var(--dark-surface-2);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--dark-surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.search-result-info {
+    flex: 1;
+}
+
+.search-result-title {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+
+.search-result-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.search-result-match {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.search-loading {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--dark-surface);
+    border: 1px solid var(--border);
+    border-radius: 0 0 12px 12px;
+    margin-top: 5px;
+    padding: 1rem;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.search-loading-text {
+    color: var(--primary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Space Mono', monospace;
+}
+
+.search-loading-progress {
+    height: 2px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transition: width 0.5s ease;
+    margin-bottom: 0.5rem;
+}
+
+.search-loading-status {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    font-family: monospace;
+}
+
 .discover-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
