@@ -22,7 +22,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Try to parse the Keywords field from JSON string
                 if (dest.Keywords) {
                     try {
-                        keywords = JSON.parse(dest.Keywords);
+                        // Check if it's already an array or needs parsing from string
+                        if (typeof dest.Keywords === 'string') {
+                            keywords = JSON.parse(dest.Keywords);
+                        } else if (Array.isArray(dest.Keywords)) {
+                            keywords = dest.Keywords;
+                        }
                         
                         // Add each keyword to our unique keywords set
                         if (Array.isArray(keywords)) {
@@ -35,6 +40,39 @@ document.addEventListener('DOMContentLoaded', async function() {
                     } catch (e) {
                         console.error('Error parsing keywords for destination:', dest.Name, e);
                     }
+                }
+                
+                // If no keywords were found or parsing failed, add some default ones based on name and region
+                if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+                    keywords = [];
+                    
+                    // Add destination name parts as keywords
+                    if (dest.Name) {
+                        const nameParts = dest.Name.split(/[,\s]+/);
+                        nameParts.forEach(part => {
+                            if (part.length > 2) {
+                                const keyword = part.trim().toLowerCase();
+                                keywords.push(keyword);
+                                uniqueKeywordsSet.add(keyword);
+                            }
+                        });
+                    }
+                    
+                    // Add country as keyword if available
+                    if (dest.Country) {
+                        const keyword = dest.Country.toLowerCase();
+                        keywords.push(keyword);
+                        uniqueKeywordsSet.add(keyword);
+                    }
+                    
+                    // Add region as keyword if available
+                    if (dest.Region) {
+                        const keyword = dest.Region.toLowerCase();
+                        keywords.push(keyword);
+                        uniqueKeywordsSet.add(keyword);
+                    }
+                    
+                    console.log('Generated fallback keywords for destination:', dest.Name, keywords);
                 }
                 
                 return {
@@ -460,9 +498,42 @@ document.addEventListener('DOMContentLoaded', async function() {
             let totalScore = 0;
             let matchedKeywords = [];
             
-            // Skip if destination has no keywords
+            // First check if destination name matches the query directly
+            const queryLower = Object.keys(keywordScores).length > 0 ? 
+                Object.keys(keywordScores)[0]?.toLowerCase() : 
+                (typeof query === 'string' ? query.toLowerCase() : '');
+            const nameParts = destination.name.toLowerCase().split(/[,\s]+/);
+            
+            let nameMatchFound = false;
+            nameParts.forEach(part => {
+                if (part.length > 2 && (queryLower.includes(part) || part.includes(queryLower))) {
+                    // Direct name match gets a high score
+                    totalScore += 8;
+                    matchedKeywords.push({
+                        keyword: part.charAt(0).toUpperCase() + part.slice(1), // Capitalize first letter
+                        score: 8
+                    });
+                    nameMatchFound = true;
+                }
+            });
+            
+            // Skip keyword check if destination has no keywords
             if (!destination.keywords || !Array.isArray(destination.keywords) || destination.keywords.length === 0) {
                 console.warn('Destination has no keywords:', destination.name);
+                
+                // Still include destination if name matched the query
+                if (nameMatchFound && totalScore > 0) {
+                    results.push({
+                        id: destination.id,
+                        name: destination.name,
+                        score: totalScore,
+                        matchedKeywords: matchedKeywords,
+                        image: destination.image,
+                        description: destination.description,
+                        region: destination.region,
+                        icon: destination.icon
+                    });
+                }
                 return;
             }
             
@@ -540,7 +611,18 @@ document.addEventListener('DOMContentLoaded', async function() {
      * @param {string} query - The original search query
      * @param {Object} keywordScores - The keyword scores from Claude
      */
+    function logSearchResults(destinations, query) {
+        console.log("Search results for:", query);
+        console.log("Found destinations:", destinations.length);
+        destinations.forEach(d => {
+            console.log(`- ${d.name} (score: ${d.score})`);
+            console.log(`  Keywords: ${d.matchedKeywords.map(k => `${k.keyword}:${k.score}`).join(', ')}`);
+        });
+    }
     function displaySearchResults(destinations, query, keywordScores) {
+        // Log detailed search results for debugging
+        logSearchResults(destinations, query);
+        
         // Clear previous results
         searchResults.innerHTML = '';
         

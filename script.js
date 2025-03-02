@@ -85,22 +85,52 @@ document.addEventListener('DOMContentLoaded', async function() {
                 destinations.forEach(dest => {
                     // Format keywords if they exist
                     let keywordsHTML = '';
-                    if (dest.Keywords) {
-                        try {
-                            const keywords = typeof dest.Keywords === 'string' ? 
-                                JSON.parse(dest.Keywords) : dest.Keywords;
-                            
-                            if (Array.isArray(keywords) && keywords.length > 0) {
-                                const topKeywords = keywords.slice(0, 2); // Show only top 2 keywords
-                                keywordsHTML = `
-                                    <div class="destination-keywords">
-                                        ${topKeywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
-                                    </div>
-                                `;
+                    // Process keywords - handle both string and array formats
+                    try {
+                        let keywords = [];
+                        if (dest.Keywords) {
+                            if (typeof dest.Keywords === 'string') {
+                                keywords = JSON.parse(dest.Keywords);
+                            } else if (Array.isArray(dest.Keywords)) {
+                                keywords = dest.Keywords;
                             }
-                        } catch (e) {
-                            console.error('Error parsing keywords for destination:', dest.Name, e);
                         }
+                        
+                        // If no keywords, create some from the destination name and country
+                        if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+                            keywords = [];
+                            
+                            // Add parts of the name as keywords
+                            if (dest.Name) {
+                                const nameParts = dest.Name.split(/[,\s]+/);
+                                nameParts.forEach(part => {
+                                    if (part.length > 2) {
+                                        keywords.push(part.trim());
+                                    }
+                                });
+                            }
+                            
+                            // Add country as a keyword
+                            if (dest.Country) {
+                                keywords.push(dest.Country);
+                            }
+                            
+                            // Add region as a keyword
+                            if (dest.Region) {
+                                keywords.push(dest.Region);
+                            }
+                        }
+                        
+                        if (Array.isArray(keywords) && keywords.length > 0) {
+                            const topKeywords = keywords.slice(0, 2); // Show only top 2 keywords
+                            keywordsHTML = `
+                                <div class="destination-keywords">
+                                    ${topKeywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
+                                </div>
+                            `;
+                        }
+                    } catch (e) {
+                        console.error('Error processing keywords for destination:', dest.Name, e);
                     }
                     
                     // Create a shortened description
