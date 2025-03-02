@@ -1,5 +1,4 @@
-
-// ===== CONFIGURATION =====
+/* ===== CONFIGURATION ===== */
 const CONFIG = {
   SHEETS: {
     USERS: 'Users',
@@ -21,7 +20,7 @@ const CONFIG = {
   }
 };
 
-// ===== DATABASE INITIALIZATION =====
+/* ===== DATABASE INITIALIZATION ===== */
 
 /**
  * Initialize database (all sheets) if they don't exist
@@ -65,9 +64,10 @@ function initializeUsersSheet(ss) {
   if (!sheet) {
     sheet = ss.insertSheet(CONFIG.SHEETS.USERS);
     
+    // Note: Renamed "Bio" to "UserBio" so that it doesn’t conflict with Password.
     const headers = [
       'UserID', 'Email', 'FirstName', 'LastName', 'Avatar', 'Password', 'Phone', 
-      'Bio', 'HomeLocation', 'CreatedAt', 'LastLogin', 'Verified', 'TravelStyle', 
+      'UserBio', 'HomeLocation', 'CreatedAt', 'LastLogin', 'Verified', 'TravelStyle', 
       'Interests', 'Budget', 'Pace', 'Planning', 'AccommodationPrefs', 'PrivacySettings',
       'CountriesVisited', 'UpcomingTrips', 'ShareTravelDates', 'AllowConnectionRequests', 'ShowInSearch'
     ];
@@ -233,7 +233,7 @@ function initializeInterestsSheet(ss) {
   return sheet;
 }
 
-// ===== DATA OPERATIONS =====
+/* ===== DATA OPERATIONS ===== */
 
 /**
  * Create a new user (signup function)
@@ -251,7 +251,7 @@ function createUser(userData) {
     // Get current timestamp
     const timestamp = new Date().toISOString();
     
-    // Create user row
+    // Create user row – note that the 8th column is now “UserBio”
     const userRow = [
       userId,
       userData.email,
@@ -342,7 +342,7 @@ function getUserByEmail(email) {
     const headers = data[0];
     
     for (let i = 1; i < data.length; i++) {
-      if (data[i][1].toLowerCase() === email.toLowerCase()) {
+      if (String(data[i][1]).toLowerCase() === String(email).toLowerCase()) {
         const userData = {};
         headers.forEach((header, index) => {
           let value = data[i][index];
@@ -364,7 +364,7 @@ function getUserByEmail(email) {
 /**
  * Update user profile
  * @param {string} userId - User ID
- * @param {object} userData - Updated user data
+ * @param {object} userData - Updated user data (expects keys like email, firstName, bio, etc.)
  * @returns {object} - Result object
  */
 function updateUser(userId, userData) {
@@ -374,16 +374,44 @@ function updateUser(userId, userData) {
     
     const data = sheet.getDataRange().getValues();
     const headers = data[0];
+    // mapping from sheet header names to input field keys (use lowerCamelCase for incoming data)
+    const fieldMap = {
+      'UserID': 'userId',
+      'Email': 'email',
+      'FirstName': 'firstName',
+      'LastName': 'lastName',
+      'Avatar': 'avatar',
+      'Password': 'password',
+      'Phone': 'phone',
+      'UserBio': 'bio',
+      'HomeLocation': 'homeLocation',
+      'CreatedAt': 'createdAt',
+      'LastLogin': 'lastLogin',
+      'Verified': 'verified',
+      'TravelStyle': 'travelStyle',
+      'Interests': 'interests',
+      'Budget': 'budget',
+      'Pace': 'pace',
+      'Planning': 'planning',
+      'AccommodationPrefs': 'accommodationPrefs',
+      'PrivacySettings': 'privacySettings',
+      'CountriesVisited': 'countriesVisited',
+      'UpcomingTrips': 'upcomingTrips',
+      'ShareTravelDates': 'shareTravelDates',
+      'AllowConnectionRequests': 'allowConnectionRequests',
+      'ShowInSearch': 'showInSearch'
+    };
     
     for (let i = 1; i < data.length; i++) {
       if (data[i][0] === userId) {
         headers.forEach((header, index) => {
-          if (userData[header] !== undefined) {
-            if (typeof userData[header] === 'object') {
-              sheet.getRange(i + 1, index + 1).setValue(JSON.stringify(userData[header]));
-            } else {
-              sheet.getRange(i + 1, index + 1).setValue(userData[header]);
+          let inputKey = fieldMap[header];
+          if (userData[inputKey] !== undefined) {
+            let value = userData[inputKey];
+            if (typeof value === 'object') {
+              value = JSON.stringify(value);
             }
+            sheet.getRange(i + 1, index + 1).setValue(value);
           }
         });
         return { success: true, message: 'User updated successfully' };
@@ -1043,7 +1071,7 @@ function getAllChannels() {
   }
 }
 
-// ===== NEW AUTHENTICATION FUNCTIONS =====
+/* ===== NEW AUTHENTICATION FUNCTIONS ===== */
 
 /**
  * Login (for frontend signup/login)
@@ -1076,14 +1104,23 @@ function loginUser(params) {
 
 /**
  * Tester login – bypasses the password check.
- * Call this with an "email" parameter.
- * @param {object} params - Contains an email.
+ * If no email is provided then the first user in the Users sheet is returned.
+ * @param {object} params - Contains an optional email.
  * @returns {object} - Result object.
  */
 function testerLogin(params) {
-  const email = params.email;
+  let email = params.email;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CONFIG.SHEETS.USERS);
+  const data = sheet.getDataRange().getValues();
+  
+  // If email is not provided, use the first user found (if exists)
   if (!email) {
-    return { success: false, message: 'Email required for tester login' };
+    if (data.length > 1) { // row 0 is headers
+      email = data[1][1]; // second row, column "Email"
+    } else {
+      return { success: false, message: 'No users available for tester login' };
+    }
   }
   
   const userResult = getUserByEmail(email);
@@ -1096,7 +1133,7 @@ function testerLogin(params) {
   }
 }
 
-// ===== WEB APP ENDPOINTS =====
+/* ===== WEB APP ENDPOINTS ===== */
 
 /**
  * Handle GET requests
@@ -1258,7 +1295,7 @@ function showApiDocs() {
       <ul>
         <li><code>?action=signup</code> - Create a new user</li>
         <li><code>?action=login&email=[email]&password=[password]</code> - Login a user</li>
-        <li><code>?action=testerLogin&email=[email]</code> - Tester login without a password</li>
+        <li><code>?action=testerLogin&email=[email]</code> - Tester login without a password (email is optional)</li>
         <li><code>?action=updateUser&userId=[id]</code> - Update user profile</li>
         <li><code>?action=createTrip</code> - Create a new trip</li>
         <li><code>?action=createInvite</code> - Create a new invite</li>
