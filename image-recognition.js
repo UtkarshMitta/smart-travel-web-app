@@ -420,6 +420,159 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = ''; // Restore scrolling
         }
     }
+    /**
+     * Identify location from an image using Claude Vision
+     * @param {string} imageData - Base64 encoded image data (without the data:image prefix)
+     * @param {string} description - Optional context about the image
+     * @returns {Promise<Object>} - The analysis results
+     */
+    identifyLocationFromImage: async function(imageData, description = '') {
+        try {
+            // Determine the likely image type (a more robust implementation would detect this)
+            const mediaType = 'image/jpeg';
+            
+            // Create the prompt for Claude
+            const prompt = `Analyze this travel image and identify the location shown. 
+            If possible, determine:
+            1. The specific location name
+            2. The region/country
+            3. Your confidence level (high, medium, or low)
+            4. A brief description of what makes this location notable
+            5. Any alternative possible locations if you're uncertain
+            6. 2-3 travel tips for this destination
+            
+            Format your response as structured data that can be easily parsed.
+            ${description ? 'Additional context from user: ' + description : ''}`;
+            
+            // Format the request data for Claude API
+            const requestData = {
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "image",
+                                source: {
+                                    type: "base64",
+                                    media_type: mediaType,
+                                    data: imageData
+                                }
+                            },
+                            {
+                                type: "text",
+                                text: prompt
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            // Call the backend API endpoint
+            const response = await fetch('https://script.google.com/macros/s/AKfycbzCuzX3RgjMuz6OsX1f3mEunxbuxK2xkwOMKdTDYJvVGfKNIcaLtXh-hN008SMn_wvgpQ/exec?action=callClaudeApi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                console.error('API error:', data);
+                return {
+                    success: false,
+                    message: data.message || 'Failed to analyze image'
+                };
+            }
+            
+            // Extract Claude's response text
+            const claudeResponse = data.data.content[0].text;
+            
+            // Parse the response to extract structured location data
+            const results = this.parseLocationResponse(claudeResponse);
+            
+            return {
+                success: true,
+                results: results
+            };
+        } catch (error) {
+            console.error('Error in identifyLocationFromImage:', error);
+            return {
+                success: false,
+                message: error.message || 'Error analyzing image'
+            };
+        }
+    },
+    
+    /**
+     * Parse Claude's response into structured data
+     * @param {string} responseText - Claude's response text
+     * @returns {Object} - Structured location data
+     */
+    parseLocationResponse: function(responseText) {
+        try {
+            // First try to find and parse any JSON in the response
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                try {
+                    return JSON.parse(jsonMatch[0]);
+                } catch (e) {
+                    console.warn('Failed to parse JSON from response');
+                }
+            }
+            
+            // Fallback to regex-based parsing if no valid JSON is found
+            const locationMatch = responseText.match(/location[:\s]+([^\n.,]+)/i);
+            const regionMatch = responseText.match(/region[:\s]+([^\n.,]+)/i);
+            const confidenceMatch = responseText.match(/confidence[:\s]+([^\n.,]+)/i);
+            const descriptionMatch = responseText.match(/description[:\s]+(.*?)(?=\n\n|\n[A-Z]|$)/is);
+            
+            // Parse alternatives (if any)
+            const alternatives = [];
+            const altMatches = responseText.match(/alternative[s]?[:\s]+(.*?)(?=\n\n|\n[A-Z]|$)/is);
+            if (altMatches && altMatches[1]) {
+                const altText = altMatches[1];
+                const altLocations = altText.split(/\n/).filter(line => line.trim() !== '');
+                altLocations.forEach(alt => {
+                    const parts = alt.split(/[,-]/);
+                    if (parts.length > 0) {
+                        alternatives.push({
+                            location: parts[0].trim().replace(/^[0-9\s.)-]+/, ''),
+                            region: parts.length > 1 ? parts[1].trim() : ''
+                        });
+                    }
+                });
+            }
+            
+            // Parse travel tips (if any)
+            const travelTips = [];
+            const tipsMatch = responseText.match(/travel\s+tips[:\s]+(.*?)(?=\n\n|\n[A-Z]|$)/is);
+            if (tipsMatch && tipsMatch[1]) {
+                const tipsText = tipsMatch[1];
+                const tipsList = tipsText.split(/\n/).filter(line => line.trim() !== '');
+                tipsList.forEach(tip => {
+                    travelTips.push(tip.trim().replace(/^[0-9\s.)-]+/, ''));
+                });
+            }
+            
+            return {
+                location: locationMatch ? locationMatch[1].trim() : 'Unknown Location',
+                region: regionMatch ? regionMatch[1].trim() : '',
+                confidence: confidenceMatch ? confidenceMatch[1].trim() : 'Low',
+                description: descriptionMatch ? descriptionMatch[1].trim() : 'No description available',
+                alternatives: alternatives,
+                travelTips: travelTips
+            };
+        } catch (error) {
+            console.error('Error parsing location response:', error);
+            return {
+                location: 'Unknown Location',
+                confidence: 'Low',
+                description: 'Unable to parse location information from the response.'
+            };
+        }
+    }
 
     /**
      * Show a notification message
