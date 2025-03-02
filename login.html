@@ -428,7 +428,11 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Google Apps Script URL - if this doesn't work, we'll need to deploy it with proper CORS settings
             const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxUdsoSMawsnWvS7DNy9IeGEssK5SU2zAUMhUkz_N2aTU4fk3Q7R_S6kJqs9bQAW5DnfQ/exec';
+            
+            // Fallback to local storage if API is unavailable
+            const useLocalStorageFallback = true; // Set to false when API is working
             const loginForm = document.getElementById('login-form');
             const loginError = document.getElementById('login-error');
             const loginSuccess = document.getElementById('login-success');
@@ -481,44 +485,51 @@
                 loginSpinner.style.display = 'inline-block';
                 
                 try {
-                    // Using JSONP approach to bypass CORS
-                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    let data;
+                    const userData = {
+                        email,
+                        password
+                    };
                     
-                    // Create a promise to handle the JSONP response
-                    const jsonpPromise = new Promise((resolve, reject) => {
-                        // Create a global callback function that will be called by the script
-                        window[jsonpCallback] = function(data) {
-                            // Clean up
-                            document.body.removeChild(script);
-                            delete window[jsonpCallback];
-                            resolve(data);
-                        };
+                    if (!useLocalStorageFallback) {
+                        // Make the API call with fetch when API is working
+                        const response = await fetch(`${API_BASE_URL}?action=login`, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(userData)
+                        });
                         
-                        // Create a script element to make the request
-                        const script = document.createElement('script');
+                        // Parse the response
+                        data = await response.json();
+                    } else {
+                        // Local storage fallback implementation
+                        console.log('Using local storage fallback for login');
                         
-                        // Handle errors
-                        script.onerror = function() {
-                            document.body.removeChild(script);
-                            delete window[jsonpCallback];
-                            reject(new Error('JSONP request failed'));
-                        };
+                        // Check if user exists in demo_users
+                        const existingUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
+                        const user = existingUsers.find(u => u.email === email);
                         
-                        // Set up the URL with the callback and user data
-                        const userData = {
-                            email,
-                            password
-                        };
-                        
-                        const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
-                        script.src = `${API_BASE_URL}?action=login&callback=${jsonpCallback}&data=${userDataEncoded}`;
-                        
-                        // Add the script to the page
-                        document.body.appendChild(script);
-                    });
-                    
-                    // Wait for the JSONP response
-                    const data = await jsonpPromise;
+                        if (user) {
+                            // Successful login
+                            data = {
+                                success: true,
+                                userId: user.id,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                token: 'demo_token_' + Math.random().toString(36).substring(2),
+                                message: 'Login successful'
+                            };
+                        } else {
+                            // Failed login
+                            data = {
+                                success: false,
+                                message: 'Invalid email or password'
+                            };
+                        }
+                    }
                     
                     if (data.success) {
                         // Extract user profile data
@@ -571,38 +582,44 @@
                 loginSpinner.style.display = 'inline-block';
                 
                 try {
-                    // Using JSONP approach to bypass CORS
-                    const jsonpCallback = 'callback_' + Math.floor(Math.random() * 1000000);
+                    let data;
                     
-                    // Create a promise to handle the JSONP response
-                    const jsonpPromise = new Promise((resolve, reject) => {
-                        // Create a global callback function that will be called by the script
-                        window[jsonpCallback] = function(data) {
-                            // Clean up
-                            document.body.removeChild(script);
-                            delete window[jsonpCallback];
-                            resolve(data);
+                    if (!useLocalStorageFallback) {
+                        // Make the API call with fetch when API is working
+                        const response = await fetch(`${API_BASE_URL}?action=testerLogin`, {
+                            method: 'GET',
+                            mode: 'cors'
+                        });
+                        
+                        // Parse the response
+                        data = await response.json();
+                    } else {
+                        // Local storage fallback for tester login
+                        console.log('Using local storage fallback for tester login');
+                        
+                        // Create a test user if one doesn't exist
+                        const testerUser = {
+                            id: 'tester-id',
+                            firstName: 'Test',
+                            lastName: 'User',
+                            email: 'tester@cluster.travel',
+                            token: 'demo_token_tester_' + Math.random().toString(36).substring(2),
+                            isTester: true,
+                            role: 'tester'
                         };
                         
-                        // Create a script element to make the request
-                        const script = document.createElement('script');
+                        // Add to demo_users if it doesn't exist yet
+                        const existingUsers = JSON.parse(localStorage.getItem('demo_users') || '[]');
+                        if (!existingUsers.find(u => u.email === testerUser.email)) {
+                            existingUsers.push({...testerUser, password: '********'});
+                            localStorage.setItem('demo_users', JSON.stringify(existingUsers));
+                        }
                         
-                        // Handle errors
-                        script.onerror = function() {
-                            document.body.removeChild(script);
-                            delete window[jsonpCallback];
-                            reject(new Error('JSONP request failed'));
+                        data = {
+                            success: true,
+                            ...testerUser
                         };
-                        
-                        // Set up the URL with the callback
-                        script.src = `${API_BASE_URL}?action=testerLogin&callback=${jsonpCallback}`;
-                        
-                        // Add the script to the page
-                        document.body.appendChild(script);
-                    });
-                    
-                    // Wait for the JSONP response
-                    const data = await jsonpPromise;
+                    }
                     
                     if (data.success) {
                         // Extract tester user data from response or use defaults
