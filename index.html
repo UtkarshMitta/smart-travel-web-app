@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cluster - The Traveler Connection Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <a href="#" class="logo">Cluster</a>
+            <div class="user-profile" id="profile-trigger">
+                <div class="user-avatar" id="user-avatar-header"></div>
+            </div>
+        </header>
+        
+        <!-- Profile Page Overlay -->
+        <div id="profile-overlay" class="profile-overlay">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <h2>Your Profile</h2>
+                    <button class="close-profile">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="profile-tabs-container">
+                    <div class="profile-tabs">
+                        <div class="profile-tab active" data-profile-tab="personal">Personal Info</div>
+                        <div class="profile-tab" data-profile-tab="preferences">Travel Preferences</div>
+                        <div class="profile-tab" data-profile-tab="connections">Connections</div>
+                        <div class="profile-tab" data-profile-tab="invites">Invites</div>
+                        <div class="profile-tab-highlight"></div>
+                    </div>
+                </div>
+                
+                <!-- Personal Info Tab -->
+                <div id="personal-tab" class="profile-content-section active">
+                    <form id="profile-form" class="profile-form">
+                        <div class="profile-avatar-section">
+                            <div class="profile-avatar-large">E</div>
+                            <button type="button" class="change-avatar-btn">Change Photo</button>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" value="Emma" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" value="Chen" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="emma@example.com" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" value="+1 (555) 123-4567" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bio">Bio</label>
+                            <textarea id="bio" name="bio" class="form-textarea" rows="4">Passionate traveler with a love for photography and authentic cultural experiences. Always looking to connect with like-minded explorers!</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location">Home Location</label>
+                            <input type="text" id="location" name="location" value="San Francisco, CA" class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Verification</label>
+                            <div class="verification-status verified">
+                                <i class="fas fa-check-circle"></i> Your profile is verified
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Travel Preferences Tab -->
+                <div id="preferences-tab" class="profile-content-section">
+                    <form id="preferences-form" class="profile-form">
+                        <div class="form-group">
+                            <label>Travel Style</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="solo" checked>
+                                    <span class="checkbox-text">Solo travel</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="group" checked>
+                                    <span class="checkbox-text">Group travel</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="backpacking">
+                                    <span class="checkbox-text">Backpacking</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="travelStyle" value="luxury">
+                                    <span class="checkbox-text">Luxury</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Travel Interests</label>
+                            <div class="interest-tags-editor">
+                                <div class="interest-tag">
+                                    Photography <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Food <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Hiking <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Culture <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <div class="interest-tag">
+                                    Museums <i class="fas fa-times remove-tag"></i>
+                                </div>
+                                <input type="text" class="add-interest-input" placeholder="Add interest...">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="budget">Budget Range</label>
+                            <div class="range-slider-container">
+                                <input type="range" id="budget" name="budget" min="1" max="5" value="3" class="range-slider">
+                                <div class="range-labels">
+                                    <span>Budget</span>
+                                    <span>Mid-range</span>
+                                    <span>Luxury</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="pace">Travel Pace</label>
+                            <div class="range-slider-container">
+                                <input type="range" id="pace" name="pace" min="1" max="5" value="4" class="range-slider">
+                                <div class="range-labels">
+                                    <span>Relaxed</span>
+                                    <span>Balanced</span>
+                                    <span>Fast-paced</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="planning">Planning Style</label>
+                            <div class="range-slider-container">
+                                <input type="range" id="planning" name="planning" min="1" max="5" value="2" class="range-slider">
+                                <div class="range-labels">
+                                    <span>Spontaneous</span>
+                                    <span>Flexible</span>
+                                    <span>Structured</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Accommodation Preferences</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="hostel" checked>
+                                    <span class="checkbox-text">Hostels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="budget" checked>
+                                    <span class="checkbox-text">Budget hotels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="midrange" checked>
+                                    <span class="checkbox-text">Mid-range hotels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="luxury">
+                                    <span class="checkbox-text">Luxury hotels</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="accommodation" value="airbnb" checked>
+                                    <span class="checkbox-text">Airbnb/Rentals</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Privacy Settings</label>
+                            <div class="toggle-group">
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Share my travel dates publicly</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Allow connection requests</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Show me in search results</span>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">Save Preferences</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Connections Tab -->
+                <div id="connections-tab" class="profile-content-section">
+                    <div class="connections-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Active Connections</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">4</div>
+                            <div class="stat-label">Upcoming Trips</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">27</div>
+                            <div class="stat-label">Countries Visited</div>
+                        </div>
+                    </div>
+                    
+                    <div class="connections-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search connections...">
+                    </div>
+                    
+                    <div class="connections-list">
+                        <div class="connection-item">
+                            <div class="connection-avatar">M</div>
+                            <div class="connection-info">
+                                <h4>Mark Johnson</h4>
+                                <p>Connected since Feb 2025</p>
+                                <div class="connection-location">
+                                    <i class="fas fa-map-marker-alt"></i> Tokyo, Japan (Apr 15 - 25)
+                                </div>
+                            </div>
+                            <div class="connection-actions">
+                                <button class="message-btn">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="more-options-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="connection-item">
+                            <div class="connection-avatar">S</div>
+                            <div class="connection-info">
+                                <h4>Sarah Winters</h4>
+                                <p>Connected since Jan 2025</p>
+                                <div class="connection-location">
+                                    <i class="fas fa-map-marker-alt"></i> Barcelona, Spain (Jul 10 - 20)
+                                </div>
+                            </div>
+                            <div class="connection-actions">
+                                <button class="message-btn">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="more-options-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="connection-item">
+                            <div class="connection-avatar">A</div>
+                            <div class="connection-info">
+                                <h4>Alex Turner</h4>
+                                <p>Connected since Mar 2025</p>
+                                <div class="connection-location">
+                                    <i class="fas fa-map-marker-alt"></i> Bali, Indonesia (May 5 - 15)
+                                </div>
+                            </div>
+                            <div class="connection-actions">
+                                <button class="message-btn">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="more-options-btn">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Invites Tab -->
+                <div id="invites-tab" class="profile-content-section">
+                    <div class="invites-container">
+                        <div class="invites-section">
+                            <h3>Received Invites</h3>
+                            <div class="invites-list">
+                                <div class="invite-item">
+                                    <div class="invite-avatar">J</div>
+                                    <div class="invite-info">
+                                        <h4>Jamie Lee invited you to join their trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Costa Rica</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Jan 10 - 20, 2026</span>
+                                        </div>
+                                        <p class="invite-message">"Looking for a hiking buddy for an adventure in Costa Rica. We'll explore volcanoes and rainforests!"</p>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="accept-btn">Accept</button>
+                                        <button class="decline-btn">Decline</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="invite-item">
+                                    <div class="invite-avatar">R</div>
+                                    <div class="invite-info">
+                                        <h4>Ryan Park invited you to join their trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Tokyo, Japan</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Apr 15 - 25, 2025</span>
+                                        </div>
+                                        <p class="invite-message">"I noticed we'll be in Tokyo at the same time. Would you like to explore some photography spots together?"</p>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="accept-btn">Accept</button>
+                                        <button class="decline-btn">Decline</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="invites-section">
+                            <h3>Sent Invites</h3>
+                            <div class="invites-list">
+                                <div class="invite-item">
+                                    <div class="invite-avatar">L</div>
+                                    <div class="invite-info">
+                                        <h4>You invited Liam Chen to join your trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Lisbon, Portugal</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Jun 5 - 15, 2025</span>
+                                        </div>
+                                        <p class="invite-message">"Hey! I saw we both love photography and will be in Lisbon around the same time. Want to explore the city together?"</p>
+                                        <div class="invite-status pending">
+                                            <i class="fas fa-clock"></i> Pending response
+                                        </div>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="cancel-btn">Cancel</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="invite-item">
+                                    <div class="invite-avatar">M</div>
+                                    <div class="invite-info">
+                                        <h4>You invited Maya Wong to join your trip</h4>
+                                        <div class="invite-details">
+                                            <span><i class="fas fa-map-marker-alt"></i> Barcelona, Spain</span>
+                                            <span><i class="fas fa-calendar-alt"></i> Jul 10 - 20, 2025</span>
+                                        </div>
+                                        <p class="invite-message">"Looking for someone to check out the architecture and food scene in Barcelona. Saw we have similar interests!"</p>
+                                        <div class="invite-status accepted">
+                                            <i class="fas fa-check-circle"></i> Accepted
+                                        </div>
+                                    </div>
+                                    <div class="invite-actions">
+                                        <button class="message-btn">
+                                            <i class="fas fa-comment"></i> Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <main>
+            <div class="tabs-container">
+                <div class="tabs">
+                    <div class="tab active" data-tab="discover">Discover</div>
+                    <div class="tab" data-tab="connect">Connect</div>
+                    <div class="tab" data-tab="community">Community</div>
+                    <div class="tab-highlight"></div>
+                </div>
+            </div>
+            
+            <!-- Discover Tab Content -->
+            <section id="discover" class="content-section active">
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Search destinations, travel styles, or interests...">
+                    <div id="search-results" class="search-results"></div>
+                    <div id="search-loading" class="search-loading"></div>
+                </div>
+                
+                <div class="discover-grid">
+                    
+                    
+                    <div class="trending-list">
+                        <h3>Trending Destinations</h3>
+                        
+                        <!-- Trending destinations will be populated dynamically from the API -->
+                    <!-- Sample item structure (will be replaced by script.js):
+                        <div class="trending-item">
+                            <div class="trending-icon">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <div class="trending-info">
+                                <h4>Destination Name</h4>
+                                <p>Destination description</p>
+                                <div class="stat-badges">
+                                    <div class="stat-badge">
+                                        <i class="fas fa-user"></i> 248 travelers
+                                    </div>
+                                    <div class="stat-badge">
+                                        <i class="fas fa-arrow-trend-up"></i> +15%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Connect Tab Content -->
+            <section id="connect" class="content-section">
+                <h2>Find Travel Companions</h2>
+                
+                <!-- Connect Sub-Tabs -->
+                <div class="connect-tabs-container">
+                    <div class="connect-tabs">
+                        <div class="connect-tab active" data-connect-tab="solo">Solo Travelers</div>
+                        <div class="connect-tab" data-connect-tab="group">Group Travelers</div>
+                        <div class="connect-tab-highlight"></div>
+                    </div>
+                </div>
+                
+                <!-- Solo Travelers Content -->
+                <div id="solo-travelers" class="connect-content-section active">
+                    <div class="location-list">
+                        <!-- Solo Location Cards -->
+                        <div class="location-card" data-location="bali">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80" alt="Bali">
+                            </div>
+                            <div class="location-info">
+                                <h3>Bali, Indonesia</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 42 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Apr - Jun 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="japan">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=800&q=80" alt="Japan">
+                            </div>
+                            <div class="location-info">
+                                <h3>Tokyo, Japan</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 38 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Mar - May 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="lisbon">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=800&q=80" alt="Lisbon">
+                            </div>
+                            <div class="location-info">
+                                <h3>Lisbon, Portugal</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 31 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Jun - Aug 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="barcelona">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&w=800&q=80" alt="Barcelona">
+                            </div>
+                            <div class="location-info">
+                                <h3>Barcelona, Spain</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 27 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: May - Jul 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="nyc">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80" alt="New York">
+                            </div>
+                            <div class="location-info">
+                                <h3>New York City, USA</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-user"></i> 25 solo travelers
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Apr - Jun 2025
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Group Travelers Content -->
+                <div id="group-travelers" class="connect-content-section">
+                    <div class="location-list">
+                        <!-- Group Location Cards -->
+                        <div class="location-card" data-location="thailand">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80" alt="Thailand">
+                            </div>
+                            <div class="location-info">
+                                <h3>Bangkok, Thailand</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 15 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Nov - Jan 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="costa-rica">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1623866530982-3b26e0b17b6d?auto=format&fit=crop&w=800&q=80" alt="Costa Rica">
+                            </div>
+                            <div class="location-info">
+                                <h3>Costa Rica</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 12 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Jan - Mar 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="italy">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80" alt="Italy">
+                            </div>
+                            <div class="location-info">
+                                <h3>Italy</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 11 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: May - Jul 2025
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="location-card" data-location="greece">
+                            <div class="location-image">
+                                <img src="https://images.unsplash.com/photo-1530841377377-3ff06c0ca713?auto=format&fit=crop&w=800&q=80" alt="Greece">
+                            </div>
+                            <div class="location-info">
+                                <h3>Greek Islands</h3>
+                                <div class="traveler-count">
+                                    <i class="fas fa-users"></i> 9 groups
+                                </div>
+                                <div class="travel-dates">
+                                    <i class="fas fa-calendar-alt"></i> Most popular: Jun - Aug 2025
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location Detail Subpage (Initially Hidden) -->
+                <div id="location-detail" class="location-detail-page">
+                    <div class="location-detail-header">
+                        <button class="back-button">
+                            <i class="fas fa-arrow-left"></i> Back to locations
+                        </button>
+                        <h3 class="detail-location-name">Bali, Indonesia</h3>
+                    </div>
+                    
+                    <div class="travelers-graph">
+                        <div class="travelers-header">
+                            <h3>Travelers planning to visit</h3>
+                            <div class="travelers-filter">
+                                <span class="filter-item active">All</span>
+                                <span class="filter-item">Apr 2025</span>
+                                <span class="filter-item">May 2025</span>
+                                <span class="filter-item">Jun 2025</span>
+                            </div>
+                        </div>
+                        
+                        <div class="travelers-list">
+                            <!-- Template for travelers, will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Community Tab Content -->
+            <section id="community" class="content-section">
+                <div class="community-container">
+                    <div class="channels-list">
+                        <h3>Destination Channels</h3>
+                        
+                        <div class="channel-item active">
+                            <div class="channel-icon">
+                                <i class="fas fa-globe-asia"></i>
+                            </div>
+                            <div class="channel-name">South East Asia</div>
+                            <div class="channel-count">56</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-mountain"></i>
+                            </div>
+                            <div class="channel-name">European Alps</div>
+                            <div class="channel-count">32</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-umbrella-beach"></i>
+                            </div>
+                            <div class="channel-name">Caribbean Islands</div>
+                            <div class="channel-count">45</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-city"></i>
+                            </div>
+                            <div class="channel-name">Nordic Cities</div>
+                            <div class="channel-count">28</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-gopuram"></i>
+                            </div>
+                            <div class="channel-name">India & Nepal</div>
+                            <div class="channel-count">51</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-pyramid"></i>
+                            </div>
+                            <div class="channel-name">Egypt & Morocco</div>
+                            <div class="channel-count">37</div>
+                        </div>
+                        
+                        <div class="channel-item">
+                            <div class="channel-icon">
+                                <i class="fas fa-route"></i>
+                            </div>
+                            <div class="channel-name">Backpacking Routes</div>
+                            <div class="channel-count">64</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3 class="chat-title">South East Asia</h3>
+                            <div class="online-indicator">
+                                <div class="indicator-dot"></div>
+                                56 travelers online
+                            </div>
+                        </div>
+                        
+                        <div class="chat-messages">
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Alex T.</div>
+                                    <p>Has anyone taken the night train from Bangkok to Chiang Mai recently? How was your experience?</p>
+                                    <div class="message-time">2:45 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Priya M.</div>
+                                    <p>I did it last month! Surprisingly comfortable if you book the first-class sleeper. Takes about 13 hours. Bring snacks!</p>
+                                    <div class="message-time">2:47 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message sent">
+                                <div class="message-content">
+                                    <p>I'm planning to visit Thailand next month. Is Chiang Mai worth visiting over Phuket if I only have time for one?</p>
+                                    <div class="message-time">2:50 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Noah W.</div>
+                                    <p>Totally different experiences! Chiang Mai for culture, temples, and mountains. Phuket for beaches and island hopping. What are you more interested in?</p>
+                                    <div class="message-time">2:53 PM</div>
+                                </div>
+                            </div>
+                            
+                            <div class="message received">
+                                <div class="message-content">
+                                    <div class="message-sender">Lin J.</div>
+                                    <p>Anyone want to meet up in Bangkok next week? I'll be staying near Khao San Road from Monday to Friday!</p>
+                                    <div class="message-time">3:01 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" placeholder="Type your message...">
+                            <button class="chat-send">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="camera-tool" title="Identify location from image">
+                <i class="fas fa-camera"></i>
+            </div>
+        </main>
+    </div>
+    
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+    <script src="search.js"></script>
+    <script src="image-recognition.js"></script>
+    
+    <script>
+        // Check if user is logged in, redirect to login page if not
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!Session.isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Set user avatar in header
+            const user = Session.getUser();
+            const userAvatarHeader = document.getElementById('user-avatar-header');
+            if (userAvatarHeader) {
+                userAvatarHeader.textContent = user.FirstName ? user.FirstName.charAt(0) : 'U';
+            }
+            
+            // Add logout functionality
+            const closeProfile = document.querySelector('.close-profile');
+            if (closeProfile) {
+                const logoutButton = document.createElement('button');
+                logoutButton.className = 'save-btn';
+                logoutButton.style.backgroundColor = '#ff4e50';
+                logoutButton.textContent = 'Log Out';
+                logoutButton.addEventListener('click', function() {
+                    Session.logout();
+                });
+                
+                // Add button to profile header
+                const profileHeader = document.querySelector('.profile-header');
+                if (profileHeader) {
+                    const logoutContainer = document.createElement('div');
+                    logoutContainer.appendChild(logoutButton);
+                    profileHeader.appendChild(logoutContainer);
+                }
+            }
+        });
+    </script>
+    <style>
+    /* Critical fixes for search UI */
+    #discover.search-active .trending-list {
+        transform: translateX(30%) translateY(20px);
+        max-width: 500px;
+        opacity: 0.9;
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    
+    .search-results-container {
+        z-index: 30;
+    }
+    
+    .search-active .discover-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+    
+    /* Ensure dropdown search results also display properly */
+    .search-results {
+        z-index: 100;
+    }
+    
+    /* Improve search transition */
+    .search-bar:focus-within {
+        transform: scale(1.02);
+        z-index: 2000;
+    }
+    
+    /* Improved text rendering */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+</style>
+</body>
+</html>s
