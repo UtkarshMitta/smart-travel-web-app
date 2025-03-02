@@ -708,18 +708,47 @@ document.addEventListener('DOMContentLoaded', async function() {
                             </div>
                         `;
                     } else {
-                        // Get sender information
+                        // Fetch sender user data if not already included
                         let senderName = 'Unknown User';
+                        
                         // Try to get sender name from message or sender object
                         if (message.sender && message.sender.name) {
                             senderName = message.sender.name;
                         } else if (message.SenderName) {
                             senderName = message.SenderName;
+                        } else {
+                            // If we have the sender ID but not the name, fetch it
+                            const senderId = message.SenderID;
+                            if (senderId) {
+                                // Check if we already looked up this user during this session
+                                if (!window.userCache) window.userCache = {};
+                                
+                                if (window.userCache[senderId]) {
+                                    const cachedUser = window.userCache[senderId];
+                                    senderName = `${cachedUser.FirstName} ${cachedUser.LastName.charAt(0)}.`;
+                                } else {
+                                    // We'll still display the message, but start an async fetch for the user
+                                    (async function() {
+                                        try {
+                                            const senderResponse = await API.getUserById(senderId);
+                                            if (senderResponse.success) {
+                                                window.userCache[senderId] = senderResponse.user;
+                                                const updatedName = `${senderResponse.user.FirstName} ${senderResponse.user.LastName.charAt(0)}.`;
+                                                // Update the sender name in the DOM
+                                                const senderElements = document.querySelectorAll(`.message-sender[data-sender-id="${senderId}"]`);
+                                                senderElements.forEach(el => el.textContent = updatedName);
+                                            }
+                                        } catch (error) {
+                                            console.error('Error fetching sender info:', error);
+                                        }
+                                    })();
+                                }
+                            }
                         }
                         
                         messageEl.innerHTML = `
                             <div class="message-content">
-                                <div class="message-sender">${senderName}</div>
+                                <div class="message-sender" data-sender-id="${message.SenderID}">${senderName}</div>
                                 <p>${message.Content}</p>
                                 <div class="message-time">${formattedTime}</div>
                             </div>
