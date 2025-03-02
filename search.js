@@ -11,16 +11,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Destinations with associated keywords
     const DESTINATIONS = [
-        { name: 'Bali, Indonesia', keywords: ['beach', 'island', 'tropical', 'cultural', 'summer', 'photography'] },
-        { name: 'Patagonia, Chile', keywords: ['mountain', 'adventure', 'nature', 'photography'] },
-        { name: 'Kyoto, Japan', keywords: ['cultural', 'historical', 'city', 'photography', 'food'] },
-        { name: 'Lisbon, Portugal', keywords: ['city', 'historical', 'food', 'summer', 'budget'] },
-        { name: 'Barcelona, Spain', keywords: ['city', 'beach', 'cultural', 'food', 'nightlife', 'photography'] },
-        { name: 'Santorini, Greece', keywords: ['island', 'beach', 'romantic', 'summer', 'photography'] },
-        { name: 'New York City, USA', keywords: ['city', 'food', 'nightlife', 'cultural', 'luxury', 'photography'] },
-        { name: 'Bangkok, Thailand', keywords: ['city', 'cultural', 'food', 'budget', 'tropical'] },
-        { name: 'Costa Rica', keywords: ['adventure', 'nature', 'beach', 'tropical', 'photography'] },
-        { name: 'Italian Alps', keywords: ['mountain', 'winter', 'adventure', 'nature', 'photography'] }
+        
     ];
     
     // Search input and results elements
@@ -179,27 +170,38 @@ document.addEventListener('DOMContentLoaded', async function() {
                 ]
             };
             
-
-            // Use our API service to call the backend callClaudeApi function
-            const response = await API.callClaudeApi(requestData);
+            // Use direct fetch with JSONP approach as shown in the working example
+            const apiUrl = API.BASE_URL;
             
-            if (!response.success) {
-                throw new Error(`API request failed: ${response.message}`);
-            }
+            // Send the request directly as JSONP
+            const response = await fetch(`${apiUrl}?action=callClaudeApi&callback=handleResponse&data=${encodeURIComponent(JSON.stringify(requestData))}`);
+            
+            const text = await response.text();
+            
+            // Extract the JSON from JSONP response
+            const jsonStart = text.indexOf('(') + 1;
+            const jsonEnd = text.lastIndexOf(')');
+            const jsonStr = text.substring(jsonStart, jsonEnd);
+            
+            const data = JSON.parse(jsonStr);
             
             // Extract the JSON object from Claude's response
             let keywordScores = {};
             try {
-                // Try to parse the content directly
-                const content = response.data.content[0].text;
-                
-                // Use regex to extract the JSON object from the response
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    keywordScores = JSON.parse(jsonMatch[0]);
+                if (data.success && data.data && data.data.content) {
+                    // Try to parse the content directly
+                    const content = data.data.content[0].text;
+                    
+                    // Use regex to extract the JSON object from the response
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        keywordScores = JSON.parse(jsonMatch[0]);
+                    } else {
+                        // Fallback to manually scoring based on query keywords
+                        keywordScores = fallbackScoring(query);
+                    }
                 } else {
-                    // Fallback to manually scoring based on query keywords
-                    keywordScores = fallbackScoring(query);
+                    throw new Error(data.message || 'Unable to get response from Claude');
                 }
             } catch (parseError) {
                 console.error('Error parsing Claude response:', parseError);
