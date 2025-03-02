@@ -499,7 +499,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     function fallbackScoring(query) {
         throw new Error('API call failed and fallbacks are disabled');
     }
-    })
     
     /**
      * Find matching destinations based on keyword scores
@@ -1004,6 +1003,11 @@ function updateMapOverlayWithSearchResults(destinations, query, keywordScores) {
             'photography': 'fa-camera'
         };
         
-        return iconMap[keyword] || 'fa-map-marker-alt';
+        // Don't return default map marker - throw error if keyword not found
+        if (iconMap[keyword]) {
+            return iconMap[keyword];
+        } else {
+            throw new Error(`No icon found for keyword: ${keyword}`);
+        }
     }
 });
