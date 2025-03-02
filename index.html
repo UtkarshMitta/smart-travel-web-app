@@ -805,5 +805,28 @@
             }
         });
     </script>
+    <style>
+    /* Critical fixes for search UI */
+    #discover.search-active .trending-list {
+        transform: translateX(30%) translateY(20px);
+        max-width: 500px;
+    }
+    
+    .search-results-container {
+        z-index: 30;
+    }
+    
+    .search-active .discover-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+    
+    /* Ensure dropdown search results also display properly */
+    .search-results {
+        z-index: 100;
+    }
+</style>
 </body>
 </html>s
